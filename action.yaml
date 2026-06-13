@@ -29,6 +29,6 @@
 
 action: submit
 gpus: 1
-test: true
-milestone: none
-notes: "GPU smoke test: install dependencies, train CE baseline and Hier-COS for 2 epochs on CIFAR-100 subset, then evaluate outputs."
+test: false
+milestone: method_runs
+notes: "Full-split CIFAR-100 run: train CE baseline for 12 epochs and Hier-COS for 16 epochs, then evaluate whether the core hierarchy-aware claim is supported."

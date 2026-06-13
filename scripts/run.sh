@@ -24,18 +24,18 @@ rm -rf outputs/predictions
 mkdir -p outputs/predictions checkpoints scoring
 
 python -m baseline.train_ce \
-  --run-name baseline_ce_smoke \
-  --epochs 2 \
-  --batch-size 128 \
-  --train-limit 6000 \
-  --test-limit 2000
+  --run-name baseline_ce \
+  --epochs 12 \
+  --batch-size 256 \
+  --lr 0.001 \
+  --weight-decay 0.0005
 
 python -m method.train_hiercos \
-  --run-name hier_cos_smoke \
-  --epochs 2 \
-  --batch-size 128 \
-  --train-limit 6000 \
-  --test-limit 2000 \
+  --run-name hier_cos \
+  --epochs 16 \
+  --batch-size 256 \
+  --lr 0.001 \
+  --weight-decay 0.0005 \
   --alpha 0.05
 
 bash scripts/evaluate.sh outputs/predictions

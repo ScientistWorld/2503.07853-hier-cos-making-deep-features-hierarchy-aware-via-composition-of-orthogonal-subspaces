@@ -8,8 +8,8 @@
 
 ## Scoring
 - [x] `scoring/reference.json` — paper's reported numbers
-- [ ] Workspace validated via `python validate.py`
-- [ ] `scoring/scores.json` — reproduced numbers
+- [x] Workspace validated via `python validate.py`
+- [x] `scoring/scores.json` — reproduced smoke numbers
 - [x] `scoring/EXPERIMENTS.md`
 - [x] `scoring/TARGETS.md`
 - [x] `scoring/CONSTRAINTS.md`
@@ -34,7 +34,7 @@
 - [x] Portable fetch recorded in `scripts/download.sh`
 
 ## Milestones
-- [ ] `method_runs` — executes end-to-end without errors
+- [x] `method_runs` — executes end-to-end without errors
 - [ ] `core_claim` — minimum experiment supports central claim
 - [ ] `core_claim_plus` — additional settings
 - [ ] `secondary_claims`

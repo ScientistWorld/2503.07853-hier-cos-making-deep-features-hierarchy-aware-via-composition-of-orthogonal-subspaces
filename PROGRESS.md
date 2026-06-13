@@ -7,17 +7,25 @@
 
 ## Results
 
-- No compute-job results yet. The first submitted job is a 2-epoch smoke run on 6,000 CIFAR-100 training images and 2,000 test images.
+- Completed 2-epoch smoke run on 6,000 CIFAR-100 training images and 2,000 test images.
+
+| method | accuracy | HOPS | HOPS@5 | HOPS@20 | FPA |
+|---|---:|---:|---:|---:|---:|
+| cross_entropy | 9.05 | 0.0497 | 0.0139 | 0.2906 | 7.25 |
+| hier_cos | 6.10 | 0.0512 | 0.0325 | 0.2877 | 5.10 |
+
+- This reaches `method_runs`: the paper's algorithm executes end-to-end and is evaluated from saved outputs.
+- This does not reach `core_claim`: the current subset/epoch setting does not yet demonstrate a clear Hier-COS advantage across the paper's benefit and constraint metrics.
 
 ## Remaining
 
-- Run the smoke job and inspect `scoring/scores.json`.
-- If Hier-COS improves hierarchical metrics over the baseline, scale training up toward the full CIFAR-100 split.
-- If results are weak, tune epoch count, alpha, learning rate, or the transformation/backbone capacity while preserving the Hier-COS procedure.
+- Run a full-split training job with more epochs and inspect `scoring/scores.json`.
+- If Hier-COS still underperforms, tune alpha, learning rate, and transformation/backbone capacity while preserving the Hier-COS procedure.
 
 ## Issues
 
 - The official repository exists at `https://github.com/Depanshu-Sani/Hier-COS`, but it has no license file. I did not vendor it into this redistributable benchmark.
+- The completed smoke job logs are available under `jobs/a03cbe21-134/`; the job exited with code 0 and produced checkpoints, prediction artifacts, and `scoring/scores.json`.
 
 ## Deviations from Paper
 
