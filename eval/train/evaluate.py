@@ -66,7 +66,8 @@ def evaluate_prediction_arrays(obj: dict[str, np.ndarray]) -> dict[str, float]:
     top_order = np.argsort(-leaf_scores, axis=1)
 
     coarse_labels = obj["coarse_labels"].astype(int) if "coarse_labels" in obj else np.array(FINE_TO_COARSE)[labels]
-    if "coarse_scores" in obj:
+    has_coarse_scores = "coarse_scores" in obj
+    if has_coarse_scores:
         coarse_pred = obj["coarse_scores"].astype(float).argmax(axis=1)
     else:
         coarse_pred = np.array(FINE_TO_COARSE)[pred]
@@ -88,6 +89,10 @@ def evaluate_prediction_arrays(obj: dict[str, np.ndarray]) -> dict[str, float]:
 
     return {
         "accuracy": float((pred == labels).mean() * 100.0),
+        "macro_accuracy": macro_accuracy(labels, pred, leaf_scores.shape[1]),
+        "top5_accuracy": topk_accuracy(labels, top_order, 5),
+        "coarse_accuracy": float((coarse_pred == coarse_labels).mean() * 100.0),
+        "fine_coarse_consistency": fine_coarse_consistency(coarse_pred, pred) if has_coarse_scores else 0.0,
         "ms": ms,
         "ahd@1": float(dists_top.mean()),
         "ahd@5": ahd_at_k(labels, top_order, 5, distance_matrix),
@@ -97,6 +102,26 @@ def evaluate_prediction_arrays(obj: dict[str, np.ndarray]) -> dict[str, float]:
         "hops@20": hops(labels, top_order, 20, distance_matrix),
         "fpa": fpa,
     }
+
+
+def macro_accuracy(labels: np.ndarray, pred: np.ndarray, num_classes: int) -> float:
+    values = []
+    for cls in range(num_classes):
+        mask = labels == cls
+        if mask.any():
+            values.append(float((pred[mask] == labels[mask]).mean()))
+    return float(np.mean(values) * 100.0) if values else 0.0
+
+
+def topk_accuracy(labels: np.ndarray, top_order: np.ndarray, k: int) -> float:
+    k = min(k, top_order.shape[1])
+    hits = [int(label) in row for label, row in zip(labels, top_order[:, :k])]
+    return float(np.mean(hits) * 100.0) if hits else 0.0
+
+
+def fine_coarse_consistency(coarse_pred: np.ndarray, fine_pred: np.ndarray) -> float:
+    fine_parent = np.array(FINE_TO_COARSE)[fine_pred]
+    return float((coarse_pred == fine_parent).mean() * 100.0)
 
 
 def lca_distance_matrix(hierarchy: Cifar100Hierarchy) -> np.ndarray:

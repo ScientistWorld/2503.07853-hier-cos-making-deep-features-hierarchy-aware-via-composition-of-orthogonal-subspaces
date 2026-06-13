@@ -5,15 +5,71 @@
       "weight": 1.0,
       "primary_metric": "hops",
       "metrics": {
-        "accuracy": {"higher_is_better": true, "coefficient": 0.5},
-        "ms": {"higher_is_better": false, "coefficient": -0.2},
-        "ahd@1": {"higher_is_better": false, "coefficient": -0.2},
-        "ahd@5": {"higher_is_better": false, "coefficient": -0.3},
-        "ahd@20": {"higher_is_better": false, "coefficient": -0.3},
-        "hops": {"higher_is_better": true, "coefficient": 1.0},
-        "hops@5": {"higher_is_better": true, "coefficient": 0.5},
-        "hops@20": {"higher_is_better": true, "coefficient": 0.5},
-        "fpa": {"higher_is_better": true, "coefficient": 0.4}
+        "accuracy": {
+          "higher_is_better": true,
+          "coefficient": 0.45,
+          "description": "Fine-label top-1 accuracy, preserving the paper's no-loss-in-recognition constraint."
+        },
+        "macro_accuracy": {
+          "higher_is_better": true,
+          "coefficient": 0.25,
+          "description": "Class-balanced fine-label accuracy that catches improvements concentrated in only a subset of CIFAR-100 classes."
+        },
+        "top5_accuracy": {
+          "higher_is_better": true,
+          "coefficient": 0.2,
+          "description": "Fine-label top-5 accuracy to check that ranked predictions keep the true class near the top."
+        },
+        "coarse_accuracy": {
+          "higher_is_better": true,
+          "coefficient": 0.25,
+          "description": "Superclass accuracy that checks whether predictions remain useful at the coarser hierarchy level."
+        },
+        "fine_coarse_consistency": {
+          "higher_is_better": true,
+          "coefficient": 0.2,
+          "description": "Agreement between the predicted fine class's parent and an explicit submitted coarse prediction; missing coarse predictions receive zero."
+        },
+        "ms": {
+          "higher_is_better": false,
+          "coefficient": -0.15,
+          "description": "Average hierarchy distance among mistakes, retained as a severity constraint."
+        },
+        "ahd@1": {
+          "higher_is_better": false,
+          "coefficient": -0.15,
+          "description": "Average hierarchy distance of the top prediction over all examples."
+        },
+        "ahd@5": {
+          "higher_is_better": false,
+          "coefficient": -0.25,
+          "description": "Permutation-invariant top-5 hierarchy distance used as a complementary severity check."
+        },
+        "ahd@20": {
+          "higher_is_better": false,
+          "coefficient": -0.25,
+          "description": "Permutation-invariant top-20 hierarchy distance used as a broad ranked-list severity check."
+        },
+        "hops": {
+          "higher_is_better": true,
+          "coefficient": 1.0,
+          "description": "Paper's headline hierarchy-aware ranking metric over the full class order."
+        },
+        "hops@5": {
+          "higher_is_better": true,
+          "coefficient": 0.55,
+          "description": "Hierarchy-aware preference score restricted to the top five ranked classes."
+        },
+        "hops@20": {
+          "higher_is_better": true,
+          "coefficient": 0.55,
+          "description": "Hierarchy-aware preference score restricted to the top twenty ranked classes."
+        },
+        "fpa": {
+          "higher_is_better": true,
+          "coefficient": 0.4,
+          "description": "Full-path accuracy measuring simultaneous correctness across hierarchy levels."
+        }
       },
       "results": {
         "cross_entropy": {

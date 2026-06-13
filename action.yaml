@@ -2,8 +2,8 @@
 # Once you set action to 'done', STOP immediately.
 # Do NOT sleep, poll, or wait. The system reads this file
 # only after your turn ends.
-action: pending
+action: done
 gpus: 0
 test: false
 milestone: secondary_claims
-notes: ""
+notes: "Improvements: added schema descriptions and anti-shortcut metrics for macro accuracy, top-5 accuracy, coarse accuracy, and explicit fine/coarse consistency. Notes: see DESIGN_NOTES.md."
