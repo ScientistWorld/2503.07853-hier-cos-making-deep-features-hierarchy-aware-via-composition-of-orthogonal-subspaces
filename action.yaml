@@ -2,4 +2,4 @@ action: done
 gpus: 0
 test: false
 milestone: secondary_claims
-notes: "Validated final Hier-COS CIFAR-100 reproduction: official-style WRN-28-8 run matches the paper's HOPS/accuracy/FPA claims closely."
+notes: "Final verification passed; fixed separation and scoring hygiene issues, workspace ready for gym use at secondary_claims."

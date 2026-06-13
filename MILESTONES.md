@@ -4,6 +4,11 @@
 
 ## Progress Log
 
+### [2026-06-13 23:21] - secondary_claims
+- Completed final verification for gym readiness.
+- Fixed method/problem separation leakage in the CIFAR hierarchy data utilities and method-agnostic documentation.
+- Aligned top-level `scores.json` and `eval/metrics.py` with every nonzero metric coefficient in `reference.json`.
+
 ### [2026-06-13 22:54] - secondary_claims
 - Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
 - Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.

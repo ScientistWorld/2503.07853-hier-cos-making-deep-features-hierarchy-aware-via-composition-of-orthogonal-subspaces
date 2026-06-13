@@ -10,7 +10,7 @@ Use the `paper_l5` taxonomy exposed by `data/cifar100_hierarchy.py` for the prim
 
 ## Model Scale
 
-Use a single image classifier with no ensemble. Keep the backbone scale within the same order as the provided WRN-16-4 reproduction backbone unless explicitly comparing to the paper-scale reference in a separate experiment. Improvements should come from hierarchy-aware methodology, not a much larger model.
+Use a single image classifier with no ensemble. Keep the backbone scale within the same order as a CIFAR WideResNet-style classifier unless explicitly labeling a model-scale ablation. Improvements should come from hierarchy-aware methodology, not a much larger model.
 
 ## Evaluation
 

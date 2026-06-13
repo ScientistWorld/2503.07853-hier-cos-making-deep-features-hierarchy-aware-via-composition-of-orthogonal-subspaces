@@ -1,9 +1,9 @@
 """CIFAR-100 hierarchy utilities.
 
-The paper reports CIFAR-100 with a five-level hierarchy from Fine-Grained-or-Not.
-For compatibility with the first compact reproduction this module also keeps the
-public CIFAR-100 coarse/fine taxonomy. Both variants expose the same path-based
-API and stay independent of the method implementation.
+The benchmark uses CIFAR-100 with either the five-level taxonomy used by the
+paper or the public CIFAR-100 coarse/fine taxonomy for ablations. This module is
+solution-agnostic: it exposes labels, paths, and level-to-leaf relationships
+needed by data loading and evaluation, but no method-specific representation.
 """
 
 from __future__ import annotations
@@ -49,8 +49,8 @@ FINE_TO_COARSE = [
     17, 8, 14, 13,
 ]
 
-# Rows are [fine, level4, level3, level2, level1] from the public Hier-COS
-# repository's CIFAR-100 level-5 target file.
+# Rows are [fine, level4, level3, level2, level1] from the released CIFAR-100
+# level-5 target table used for the paper's benchmark.
 PAPER_L5_ROWS = [
     [0, 4, 5, 3, 0], [1, 1, 6, 0, 0], [2, 14, 3, 0, 0],
     [3, 8, 3, 0, 0], [4, 0, 6, 0, 0], [5, 6, 0, 1, 1],
@@ -99,8 +99,6 @@ class Cifar100Hierarchy:
     level_node_indices: list[list[int]]
     fine_to_path: list[list[int]]
     fine_to_level_labels: list[list[int]]
-    node_to_subspace: list[list[int]]
-    leaf_to_subspace: list[list[int]]
     level_to_leaf_sets: list[list[list[int]]]
 
     @property
@@ -172,22 +170,12 @@ def _build_from_level_labels(
     fine_node_indices = level_node_indices[-1]
     leaf_node_indices = fine_node_indices.copy()
 
-    ancestors: dict[int, set[int]] = {node: set() for node in range(next_node)}
-    descendants: dict[int, set[int]] = {node: set() for node in range(next_node)}
     level_to_leaf_sets: list[list[list[int]]] = [[[] for _ in nodes] for nodes in level_node_indices]
     for fine, path in enumerate(fine_to_path):
         for level, node in enumerate(path):
-            ancestors[node].update(path[:level])
-            descendants[node].update(path[level + 1:])
             local_idx = level_node_indices[level].index(node)
             level_to_leaf_sets[level][local_idx].append(fine)
 
-    node_to_subspace = []
-    for node in range(next_node):
-        dims = sorted(ancestors[node] | {node} | descendants[node])
-        node_to_subspace.append(dims)
-
-    leaf_to_subspace = [node_to_subspace[idx] for idx in leaf_node_indices]
     return Cifar100Hierarchy(
         name=name,
         node_names=node_names,
@@ -197,8 +185,6 @@ def _build_from_level_labels(
         level_node_indices=level_node_indices,
         fine_to_path=fine_to_path,
         fine_to_level_labels=fine_to_level_labels,
-        node_to_subspace=node_to_subspace,
-        leaf_to_subspace=leaf_to_subspace,
         level_to_leaf_sets=level_to_leaf_sets,
     )
 

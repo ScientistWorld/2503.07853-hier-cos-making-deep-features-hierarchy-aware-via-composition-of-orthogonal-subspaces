@@ -34,6 +34,7 @@ def main() -> None:
     np.random.seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     hierarchy = build_hierarchy(args.hierarchy)
+    node_subspaces = hierarchy_composed_subspaces(hierarchy.fine_to_path, hierarchy.num_nodes)
 
     train_set = maybe_subset(Cifar100Pickle(args.data_root, "train", augment=True), args.train_limit, args.seed)
     test_set = maybe_subset(Cifar100Pickle(args.data_root, "test", augment=False), args.test_limit, args.seed)
@@ -42,8 +43,8 @@ def main() -> None:
 
     model = HierCOS(
         num_nodes=hierarchy.num_nodes,
-        leaf_subspaces=hierarchy.leaf_to_subspace,
-        coarse_subspaces=[hierarchy.node_to_subspace[i] for i in hierarchy.level_node_indices[0]],
+        leaf_subspaces=[node_subspaces[i] for i in hierarchy.leaf_node_indices],
+        coarse_subspaces=[node_subspaces[i] for i in hierarchy.level_node_indices[0]],
         backbone=args.backbone,
     ).to(device)
     opt = make_optimizer(model, args.optimizer, args.lr, args.weight_decay)
@@ -107,8 +108,9 @@ def predict(model: HierCOS, loader: DataLoader, device: torch.device, hierarchy:
     labels, coarse_labels, leaf_scores, coarse_scores = [], [], [], []
     level_labels = []
     level_scores = [[] for _ in hierarchy.level_node_indices]
+    node_subspaces = hierarchy_composed_subspaces(hierarchy.fine_to_path, hierarchy.num_nodes)
     level_masks = [
-        subspace_mask(hierarchy.num_nodes, [hierarchy.node_to_subspace[node] for node in nodes]).to(device)
+        subspace_mask(hierarchy.num_nodes, [node_subspaces[node] for node in nodes]).to(device)
         for nodes in hierarchy.level_node_indices
     ]
     path_table = np.array(hierarchy.fine_to_level_labels, dtype=np.int64)
@@ -133,6 +135,16 @@ def subspace_mask(num_nodes: int, subspaces: list[list[int]]) -> torch.Tensor:
     for row, dims in enumerate(subspaces):
         mask[row, dims] = 1.0
     return mask
+
+
+def hierarchy_composed_subspaces(fine_to_path: list[list[int]], num_nodes: int) -> list[list[int]]:
+    ancestors: dict[int, set[int]] = {node: set() for node in range(num_nodes)}
+    descendants: dict[int, set[int]] = {node: set() for node in range(num_nodes)}
+    for path in fine_to_path:
+        for level, node in enumerate(path):
+            ancestors[node].update(path[:level])
+            descendants[node].update(path[level + 1 :])
+    return [sorted(ancestors[node] | {node} | descendants[node]) for node in range(num_nodes)]
 
 
 def make_optimizer(model: HierCOS, name: str, lr: float, weight_decay: float) -> torch.optim.Optimizer:
