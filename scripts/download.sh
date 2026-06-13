@@ -23,7 +23,7 @@ mkdir -p data/downloads
 
 if [ ! -e data/downloads/cifar-100-python/train ]; then
   tmpdir="$(mktemp -d)"
-  wget -nc https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz -O "$tmpdir/cifar-100-python.tar.gz"
+  wget -nc https://cave.cs.toronto.edu/kriz/cifar-100-python.tar.gz -O "$tmpdir/cifar-100-python.tar.gz"
   tar -xzf "$tmpdir/cifar-100-python.tar.gz" -C "$tmpdir"
   rm -rf data/downloads/cifar-100-python
   mv "$tmpdir/cifar-100-python" data/downloads/cifar-100-python
