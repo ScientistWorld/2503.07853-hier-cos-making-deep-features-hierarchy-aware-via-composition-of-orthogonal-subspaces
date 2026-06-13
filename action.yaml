@@ -2,4 +2,4 @@ action: submit
 gpus: 1
 test: false
 milestone: core_claim
-notes: "Run CE and Hier-COS with WRN-16-4 on the paper_l5 CIFAR-100 hierarchy; regenerate scores.json and validate the comparison."
+notes: "Reuse the completed CE artifact when available, train Hier-COS for 48 epochs on paper_l5, regenerate scores.json, and validate the comparison."
