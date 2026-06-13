@@ -1,3 +1,8 @@
-action: done
-milestone: core_claim_plus
-notes: "Restored core_claim_plus: the paper's 5-level CIFAR hierarchy is implemented and validated, with matched 48-epoch WRN-16-4 runs showing Hier-COS improves hierarchy-aware ranking metrics over CE while accuracy/FPA constraints are measured and documented."
+# IMPORTANT: Once you set action to 'submit' or 'done', STOP immediately.
+# Do NOT sleep, poll, or wait for jobs. The system reads this file
+# only after your turn ends. Sleeping blocks the entire pipeline.
+action: pending
+gpus: 1
+test: false
+milestone: core_claim
+notes: ""
