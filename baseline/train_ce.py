@@ -20,7 +20,8 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=3e-3)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
-    parser.add_argument("--backbone", choices=["small", "wrn16_4"], default="small")
+    parser.add_argument("--backbone", choices=["small", "wrn16_4", "official_wrn28_8"], default="small")
+    parser.add_argument("--optimizer", choices=["adamw", "sgd"], default="adamw")
     parser.add_argument("--hierarchy", choices=["public", "paper_l5"], default="public")
     parser.add_argument("--train-limit", type=int, default=0)
     parser.add_argument("--test-limit", type=int, default=0)
@@ -38,7 +39,7 @@ def main() -> None:
     test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False, num_workers=2)
 
     model = FlatCE(num_classes=100, backbone=args.backbone).to(device)
-    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    opt = make_optimizer(model, args.optimizer, args.lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(1, args.epochs))
     for epoch in range(args.epochs):
         model.train()
@@ -107,6 +108,23 @@ def softmax_np(x: np.ndarray) -> np.ndarray:
     shifted = x - x.max(axis=1, keepdims=True)
     exp = np.exp(shifted)
     return exp / exp.sum(axis=1, keepdims=True)
+
+
+def make_optimizer(model: FlatCE, name: str, lr: float, weight_decay: float) -> torch.optim.Optimizer:
+    if name == "adamw":
+        return torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    if name != "sgd":
+        raise ValueError(f"unknown optimizer: {name}")
+    if getattr(model.backbone, "out_dim", 256) != 256:
+        return torch.optim.SGD(
+            [
+                {"params": model.classifier.parameters(), "lr": lr},
+                {"params": model.backbone.parameters(), "lr": lr * 0.1},
+            ],
+            momentum=0.9,
+            weight_decay=weight_decay,
+        )
+    return torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
 
 
 if __name__ == "__main__":

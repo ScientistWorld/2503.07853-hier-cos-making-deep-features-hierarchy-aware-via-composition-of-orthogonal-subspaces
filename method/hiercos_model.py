@@ -104,11 +104,186 @@ class WideResNetBackbone(nn.Module):
         return self.proj(out.flatten(1))
 
 
+class OfficialWideBasicBlock(nn.Module):
+    """WideResNet block matching the released Hier-COS CIFAR backbone."""
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        stride: int,
+        activate_before_residual: bool = False,
+        dropout_rate: float = 0.0,
+    ) -> None:
+        super().__init__()
+        self.equal_channels = in_channels == out_channels
+        self.activate_before_residual = activate_before_residual
+        self.dropout_rate = dropout_rate
+        self.bn1 = nn.BatchNorm2d(in_channels, momentum=0.001)
+        self.relu1 = nn.LeakyReLU(0.1, inplace=True)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, 3, stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels, momentum=0.001)
+        self.relu2 = nn.LeakyReLU(0.1, inplace=True)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, 3, stride=1, padding=1, bias=False)
+        self.shortcut = (
+            nn.Identity()
+            if self.equal_channels and stride == 1
+            else nn.Conv2d(in_channels, out_channels, 1, stride=stride, bias=False)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if not self.equal_channels and self.activate_before_residual:
+            x = self.relu1(self.bn1(x))
+            out = x
+        else:
+            out = self.relu1(self.bn1(x))
+        out = self.conv1(out if self.equal_channels else x)
+        out = self.relu2(self.bn2(out))
+        if self.dropout_rate > 0:
+            out = F.dropout(out, p=self.dropout_rate, training=self.training)
+        out = self.conv2(out)
+        return self.shortcut(x) + out
+
+
+class OfficialNetworkBlock(nn.Module):
+    def __init__(
+        self,
+        layers: int,
+        in_channels: int,
+        out_channels: int,
+        stride: int,
+        activate_before_residual: bool = False,
+    ) -> None:
+        super().__init__()
+        blocks = []
+        for idx in range(layers):
+            blocks.append(
+                OfficialWideBasicBlock(
+                    in_channels if idx == 0 else out_channels,
+                    out_channels,
+                    stride if idx == 0 else 1,
+                    activate_before_residual=activate_before_residual and idx == 0,
+                )
+            )
+        self.layer = nn.Sequential(*blocks)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.layer(x)
+
+
+class OfficialWideResNetFeatures(nn.Module):
+    """WRN-28-8 feature extractor used by the official CIFAR experiments."""
+
+    def __init__(self, depth: int = 28, widen_factor: int = 8) -> None:
+        super().__init__()
+        if (depth - 4) % 6 != 0:
+            raise ValueError("WideResNet depth must satisfy depth = 6n + 4")
+        layers_per_group = (depth - 4) // 6
+        channels = [16, 16 * widen_factor, 32 * widen_factor, 64 * widen_factor]
+        self.out_dim = channels[3]
+        self.conv1 = nn.Conv2d(3, channels[0], 3, stride=1, padding=1, bias=False)
+        self.block1 = OfficialNetworkBlock(
+            layers_per_group, channels[0], channels[1], 1, activate_before_residual=True
+        )
+        self.block2 = OfficialNetworkBlock(layers_per_group, channels[1], channels[2], 2)
+        self.block3 = OfficialNetworkBlock(layers_per_group, channels[2], channels[3], 2)
+        self.bn1 = nn.BatchNorm2d(channels[3], momentum=0.001)
+        self.relu = nn.LeakyReLU(0.1, inplace=True)
+        self._init_weights()
+
+    def _features(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.conv1(x)
+        out = self.block1(out)
+        out = self.block2(out)
+        out = self.block3(out)
+        return self.relu(self.bn1(out))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self._features(x)
+        out = F.adaptive_avg_pool2d(out, 1)
+        return out.flatten(1)
+
+    def _init_weights(self) -> None:
+        for module in self.modules():
+            if isinstance(module, nn.Conv2d):
+                nn.init.kaiming_normal_(module.weight, mode="fan_out", nonlinearity="leaky_relu")
+            elif isinstance(module, (nn.BatchNorm2d, nn.BatchNorm1d)):
+                module.weight.data.fill_(1.0)
+                module.bias.data.zero_()
+            elif isinstance(module, nn.Linear):
+                nn.init.xavier_normal_(module.weight)
+                if module.bias is not None:
+                    module.bias.data.zero_()
+
+
+class ResidualPointLayer(nn.Module):
+    """Residual point-wise transformation block from the released HAFrame head."""
+
+    def __init__(self, in_dim: int, out_dim: int) -> None:
+        super().__init__()
+        self.shortcut = nn.Identity() if in_dim == out_dim else nn.Linear(in_dim, out_dim, bias=False)
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, out_dim, bias=False),
+            nn.BatchNorm1d(out_dim),
+            nn.PReLU(out_dim),
+            nn.Linear(out_dim, out_dim, bias=False),
+            nn.BatchNorm1d(out_dim),
+            nn.PReLU(out_dim),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.shortcut(x) + self.net(x)
+
+
+class NarrowResidualTransformationHead(nn.Module):
+    def __init__(self, in_dim: int, out_dim: int) -> None:
+        super().__init__()
+        self.layers = nn.Sequential(
+            ResidualPointLayer(in_dim, out_dim),
+            ResidualPointLayer(out_dim, out_dim),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.layers(x)
+
+
+class OfficialHAFrameWideResNet(nn.Module):
+    """Official-style CIFAR HAFrame-WRN coordinate backbone for Hier-COS."""
+
+    def __init__(self, num_nodes: int, depth: int = 28, widen_factor: int = 8) -> None:
+        super().__init__()
+        self.features = OfficialWideResNetFeatures(depth=depth, widen_factor=widen_factor)
+        self.downsample = nn.Conv2d(self.features.out_dim, num_nodes, kernel_size=1, bias=False)
+        self.bn2 = nn.BatchNorm1d(num_nodes, momentum=0.001)
+        self.projection = NarrowResidualTransformationHead(num_nodes, num_nodes)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.features._features(x)
+        out = self.downsample(out)
+        out = F.adaptive_avg_pool2d(out, 1).flatten(1)
+        out = self.bn2(out)
+        return self.projection(out)
+
+    def feature_parameters(self):
+        yield from self.features.parameters()
+
+    def head_parameters(self):
+        yield from self.downsample.parameters()
+        yield from self.bn2.parameters()
+        yield from self.projection.parameters()
+
+
 def make_backbone(name: str, feature_dim: int = 256) -> nn.Module:
     if name == "small":
-        return SmallCifarBackbone(feature_dim=feature_dim)
+        model = SmallCifarBackbone(feature_dim=feature_dim)
+        model.out_dim = feature_dim  # type: ignore[attr-defined]
+        return model
     if name == "wrn16_4":
-        return WideResNetBackbone(depth=16, widen_factor=4, feature_dim=feature_dim)
+        model = WideResNetBackbone(depth=16, widen_factor=4, feature_dim=feature_dim)
+        model.out_dim = feature_dim  # type: ignore[attr-defined]
+        return model
+    if name == "official_wrn28_8":
+        return OfficialWideResNetFeatures(depth=28, widen_factor=8)
     raise ValueError(f"unknown backbone: {name}")
 
 
@@ -143,13 +318,23 @@ class HierCOS(nn.Module):
         backbone: str = "small",
     ) -> None:
         super().__init__()
-        self.backbone = make_backbone(backbone, feature_dim=256)
-        self.transform = Transformation(256, num_nodes)
+        self.coord_backbone: nn.Module | None = None
+        if backbone == "official_wrn28_8":
+            self.coord_backbone = OfficialHAFrameWideResNet(num_nodes=num_nodes, depth=28, widen_factor=8)
+            self.backbone = None
+            self.transform = None
+        else:
+            self.backbone = make_backbone(backbone, feature_dim=256)
+            self.transform = Transformation(256, num_nodes)
         self.register_buffer("leaf_mask", _subspace_mask(num_nodes, leaf_subspaces))
         self.register_buffer("coarse_mask", _subspace_mask(num_nodes, coarse_subspaces))
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
-        coords = self.transform(self.backbone(x))
+        if self.coord_backbone is not None:
+            coords = self.coord_backbone(x)
+        else:
+            assert self.backbone is not None and self.transform is not None
+            coords = self.transform(self.backbone(x))
         squared = coords.square()
         leaf_scores = torch.sqrt(torch.matmul(squared, self.leaf_mask.t()).clamp_min(1e-12))
         coarse_scores = torch.sqrt(torch.matmul(squared, self.coarse_mask.t()).clamp_min(1e-12))
@@ -160,7 +345,7 @@ class FlatCE(nn.Module):
     def __init__(self, num_classes: int = 100, backbone: str = "small") -> None:
         super().__init__()
         self.backbone = make_backbone(backbone, feature_dim=256)
-        self.classifier = nn.Linear(256, num_classes)
+        self.classifier = nn.Linear(int(getattr(self.backbone, "out_dim", 256)), num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.classifier(self.backbone(x))

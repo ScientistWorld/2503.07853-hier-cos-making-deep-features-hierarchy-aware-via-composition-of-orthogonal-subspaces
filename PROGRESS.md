@@ -49,10 +49,11 @@
 - Auditing the official code revealed two implementation mismatches in the Hier-COS loss: path weights are squared after L2 normalization, and the auxiliary regularizer is computed after level-wise normalization rather than global coordinate normalization. These have been fixed and a new 48-epoch Hier-COS run is being submitted.
 - The first official-loss run at the paper's CIFAR alpha `0.05` underfit in this reduced WRN-16-4 setup: accuracy 37.59, FPA 36.32, HOPS 0.788. Because the paper reports alpha sensitivity down to `1e-4` with stable HOPS, the next run uses alpha `0.005` while keeping the same algorithm and training duration.
 - The alpha `0.005` official-loss run completed on the paper's 5-level CIFAR hierarchy. Compared with the matched 48-epoch CE baseline, Hier-COS improves HOPS 0.894 vs 0.582, HOPS@5 0.625 vs 0.088, HOPS@20 0.761 vs 0.222, AHD@5 1.257 vs 2.104, AHD@20 2.236 vs 3.058, and MS 2.279 vs 2.480. CE remains stronger on top-1 accuracy and FPA (70.77/70.29 vs 67.65/65.96), so the reproduced result supports the hierarchy-aware ranking claim while recording the constraint gap.
+- Added an official-style CIFAR path after auditing the released repository: WRN-28-8 feature blocks with batch-norm momentum `0.001`, an HAFrame-style coordinate head, SGD with cosine decay, classifier/head learning rate `0.1`, and backbone learning rate `0.01`. A normal GPU job is being submitted to run matched 100-epoch CE and Hier-COS experiments with this more faithful configuration.
 
 ## Remaining
 
-- To reach `majority` or `full`, future work would need paper-scale WideResNet training, multi-seed reporting, and the iNaturalist-19 setup.
+- To reach `majority` or `full`, future work would need multi-seed reporting and the iNaturalist-19/tieredImageNet-H setups. A paper-scale single-seed CIFAR WRN-28-8 run is currently queued.
 
 ## Issues
 
@@ -69,4 +70,4 @@
 
 ## Deviations from Paper
 
-- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet, 45K train / 5K val / 10K test, and 5-seed reporting. Current completed setup uses the released 5-level CIFAR hierarchy and a smaller WRN-16-4 single-seed run. This scales resources; it does not replace the Hier-COS algorithm.
+- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet-28-8, 45K train / 5K val / 10K test, and 5-seed reporting. The current completed scores use the released 5-level CIFAR hierarchy and a smaller WRN-16-4 single-seed run. A closer single-seed WRN-28-8 run is being submitted; multi-seed reporting remains scaled down for budget.

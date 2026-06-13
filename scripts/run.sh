@@ -22,25 +22,27 @@ PY
 
 mkdir -p outputs/predictions checkpoints scoring
 
-if [ ! -e outputs/predictions/baseline_ce.npz ]; then
-  python -m baseline.train_ce \
-    --run-name baseline_ce \
-    --epochs 48 \
-    --batch-size 256 \
-    --lr 0.001 \
-    --weight-decay 0.0005 \
-    --backbone wrn16_4 \
-    --hierarchy paper_l5
-fi
+rm -f outputs/predictions/baseline_ce.npz outputs/predictions/hier_cos.npz
+
+python -m baseline.train_ce \
+  --run-name baseline_ce \
+  --epochs "${EPOCHS:-100}" \
+  --batch-size "${BATCH_SIZE:-64}" \
+  --lr "${LR:-0.1}" \
+  --weight-decay 0.0005 \
+  --optimizer sgd \
+  --backbone official_wrn28_8 \
+  --hierarchy paper_l5
 
 python -m method.train_hiercos \
   --run-name hier_cos \
-  --epochs 48 \
-  --batch-size 256 \
-  --lr 0.001 \
+  --epochs "${EPOCHS:-100}" \
+  --batch-size "${BATCH_SIZE:-64}" \
+  --lr "${LR:-0.1}" \
   --weight-decay 0.0005 \
-  --backbone wrn16_4 \
-  --alpha 0.005 \
+  --optimizer sgd \
+  --backbone official_wrn28_8 \
+  --alpha "${ALPHA:-0.05}" \
   --hierarchy paper_l5
 
 bash scripts/evaluate.sh outputs/predictions
