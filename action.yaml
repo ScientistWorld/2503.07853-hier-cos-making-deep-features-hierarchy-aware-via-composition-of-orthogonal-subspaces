@@ -27,8 +27,6 @@
 #   milestone: core_claim
 #   notes: "Reproduced the core claim. Environment packaged."
 
-action: submit
-gpus: 1
-test: false
-milestone: core_claim
-notes: "WideResNet-backbone CIFAR-100 run: rerun CE and Hier-COS with a shared WRN-16-4 backbone to improve the accuracy constraint while preserving the hierarchy-aware method."
+action: done
+milestone: core_claim_plus
+notes: "Reproduced the core Hier-COS claim and an additional WRN-backbone setting. The environment, evaluator, scripts, scores, and documentation are packaged for reuse."
