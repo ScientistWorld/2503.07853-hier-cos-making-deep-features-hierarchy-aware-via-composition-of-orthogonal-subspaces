@@ -19,6 +19,7 @@ The paper argues that common hierarchical metrics miss whether top-k predictions
 
 - Public CIFAR-100 coarse/fine hierarchy, compact CNN full-split run: Hier-COS improved HOPS from 0.432 to 0.624 versus CE, with 58.10% versus 59.80% top-1 accuracy.
 - Public CIFAR-100 coarse/fine hierarchy, shared WRN-16-4 full-split run: Hier-COS improved HOPS from 0.445 to 0.648 and HOPS@5 from 0.171 to 0.531, with 59.98% versus 61.21% top-1 accuracy.
+- Paper 5-level CIFAR hierarchy (`paper_l5`), matched 48-epoch WRN-16-4 run: Hier-COS improved HOPS from 0.582 to 0.894, HOPS@20 from 0.222 to 0.761, AHD@5 from 2.104 to 1.257, and MS from 2.480 to 2.279 versus CE. Top-1 accuracy and FPA remain lower in this reduced single-seed reproduction: 67.65%/65.96% for Hier-COS versus 70.77%/70.29% for CE.
 
 ---
 
@@ -66,11 +67,11 @@ Accuracy and FPA are percentages where higher is better. FPA requires both the f
 
 ## Baselines and Targets
 
-The reference target is the paper's CIFAR-100 result for Cross Entropy and Hier-COS in Table 2, plus the CIFAR-100 FPA value from Table 4. The compact runnable benchmark uses the public CIFAR-100 coarse/fine hierarchy, so absolute hierarchical metric values are not expected to match the paper's 5-level hierarchy exactly.
+The reference target is the paper's CIFAR-100 result for Cross Entropy and Hier-COS in Table 2, plus the CIFAR-100 FPA value from Table 4. The primary runnable benchmark uses the 5-level CIFAR hierarchy table released in the public Hier-COS repository.
 
 ## Evaluation Protocol
 
-Run training scripts to write one `.npz` prediction artifact per method, then run `bash scripts/evaluate.sh outputs/predictions`. The evaluator is method-agnostic and does not import from `method/`. For fair comparison, evaluate on the same CIFAR-100 test split and the same hierarchy file in `data/`.
+Run training scripts to write one `.npz` prediction artifact per method, then run `bash scripts/evaluate.sh outputs/predictions`. The evaluator is method-agnostic and does not import from `method/`. For fair comparison, evaluate on the same CIFAR-100 test split and use the `paper_l5` hierarchy unless explicitly running an ablation.
 
 ---
 
@@ -110,12 +111,32 @@ Run training scripts to write one `.npz` prediction artifact per method, then ru
 
 </details>
 
+### Iteration 2: gpt-5.5
+- **Milestone**: `core_claim_plus` | **Status**: done
+- **Working time**: 16m | **GPU**: 0.3h
+- **Jobs**: 9 total (8 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 20:43] - method_runs
+- Implemented Hier-COS with fixed orthonormal node-coordinate bases, composed ancestor/self/descendant subspaces, weighted path KL loss, and projection-norm inference.
+- Completed a smoke run on CIFAR-100 subsets and evaluated saved prediction artifacts through the method-independent evaluator.
+
+### [2026-06-13 20:52] - core_claim
+- Completed a full-split public CIFAR-100 run with the compact CNN backbone.
+- Hier-COS improved hierarchical ranking quality over cross entropy: HOPS 0.6237 vs 0.4319 and HOPS@5 0.5043 vs 0.1631, while tracking accuracy and FPA constraints.
+
+### [2026-06-13 20:59] - core_claim_plus
+- Completed a full-split public CIFAR-100 run with the stronger WRN-16-4 backbone.
+- Hier-COS again improved the core hierarchy-aware metrics: HOPS 0.6482 vs 0.4445, HOPS@5 0.5314 vs 0.1708, HOPS@20 0.7066 vs 0.5655, and AHD@5 1.0998 vs 1.3855.
+- The workspace is packaged with download, method, baseline, evaluation, and reproduction scripts; `python validate.py --compare` passes.
+
+</details>
+
 
 ---
 
 # Reproduction Milestones
 
-**Current: core_claim**
-
-## Stop Justification
-- Completed at milestone `core_claim`.
+**Current: core_claim_plus**
