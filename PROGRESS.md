@@ -48,6 +48,7 @@
 - The matched 48-epoch CE baseline reached 70.77% accuracy and 70.29 FPA while Hier-COS retained much better hierarchy metrics (HOPS 0.893 vs 0.582 and HOPS@20 0.754 vs 0.222) but lower accuracy/FPA.
 - Auditing the official code revealed two implementation mismatches in the Hier-COS loss: path weights are squared after L2 normalization, and the auxiliary regularizer is computed after level-wise normalization rather than global coordinate normalization. These have been fixed and a new 48-epoch Hier-COS run is being submitted.
 - The first official-loss run at the paper's CIFAR alpha `0.05` underfit in this reduced WRN-16-4 setup: accuracy 37.59, FPA 36.32, HOPS 0.788. Because the paper reports alpha sensitivity down to `1e-4` with stable HOPS, the next run uses alpha `0.005` while keeping the same algorithm and training duration.
+- The alpha `0.005` official-loss run completed on the paper's 5-level CIFAR hierarchy. Compared with the matched 48-epoch CE baseline, Hier-COS improves HOPS 0.894 vs 0.582, HOPS@5 0.625 vs 0.088, HOPS@20 0.761 vs 0.222, AHD@5 1.257 vs 2.104, AHD@20 2.236 vs 3.058, and MS 2.279 vs 2.480. CE remains stronger on top-1 accuracy and FPA (70.77/70.29 vs 67.65/65.96), so the reproduced result supports the hierarchy-aware ranking claim while recording the constraint gap.
 
 ## Remaining
 
@@ -63,8 +64,9 @@
 - Paper-hierarchy job `09d14c43-2ba` completed successfully but used 16 Hier-COS epochs and showed a weak accuracy/FPA constraint.
 - Paper-hierarchy job `973d91a6-4e7` completed successfully with 48 Hier-COS epochs and improved both hierarchy metrics and accuracy/FPA over the existing 12-epoch CE artifact.
 - Matched paper-hierarchy baseline job `8a6756b8-bde` completed successfully; it showed the 48-epoch CE baseline is stronger on top-1/FPA, motivating a closer official-code loss fix.
-- Official-loss paper-hierarchy job `e843f015-125` completed successfully but underfit at alpha `0.05`; a lower-alpha method run is being submitted.
+- Official-loss paper-hierarchy job `e843f015-125` completed successfully but underfit at alpha `0.05`; this motivated the lower-alpha follow-up.
+- Official-loss paper-hierarchy job `b1d37dfa-240` completed successfully at alpha `0.005`; it restored the core hierarchy-aware gains on the paper's 5-level CIFAR hierarchy.
 
 ## Deviations from Paper
 
-- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet, 45K train / 5K val / 10K test, and 5-seed reporting. Current submitted setup uses the released 5-level CIFAR hierarchy and a smaller WRN-16-4 single-seed run. This scales resources; it does not replace the Hier-COS algorithm.
+- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet, 45K train / 5K val / 10K test, and 5-seed reporting. Current completed setup uses the released 5-level CIFAR hierarchy and a smaller WRN-16-4 single-seed run. This scales resources; it does not replace the Hier-COS algorithm.

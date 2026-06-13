@@ -19,4 +19,4 @@ The paper argues that common hierarchical metrics miss whether top-k predictions
 
 - Public CIFAR-100 coarse/fine hierarchy, compact CNN full-split run: Hier-COS improved HOPS from 0.432 to 0.624 versus CE, with 58.10% versus 59.80% top-1 accuracy.
 - Public CIFAR-100 coarse/fine hierarchy, shared WRN-16-4 full-split run: Hier-COS improved HOPS from 0.445 to 0.648 and HOPS@5 from 0.171 to 0.531, with 59.98% versus 61.21% top-1 accuracy.
-- The current code now supports the paper's 5-level CIFAR hierarchy (`paper_l5`); the next submitted run evaluates the same CE and Hier-COS comparison on that primary setting.
+- Paper 5-level CIFAR hierarchy (`paper_l5`), matched 48-epoch WRN-16-4 run: Hier-COS improved HOPS from 0.582 to 0.894, HOPS@20 from 0.222 to 0.761, AHD@5 from 2.104 to 1.257, and MS from 2.480 to 2.279 versus CE. Top-1 accuracy and FPA remain lower in this reduced single-seed reproduction: 67.65%/65.96% for Hier-COS versus 70.77%/70.29% for CE.
