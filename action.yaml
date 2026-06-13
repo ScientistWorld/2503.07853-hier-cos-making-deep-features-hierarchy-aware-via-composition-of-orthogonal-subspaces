@@ -1,9 +1,5 @@
-# This iteration writes files only — do NOT submit compute jobs.
-# Once you set action to 'done', STOP immediately.
-# Do NOT sleep, poll, or wait. The system reads this file
-# only after your turn ends.
-action: done
+action: submit
 gpus: 0
 test: false
 milestone: secondary_claims
-notes: "Improvements: added schema descriptions and anti-shortcut metrics for macro accuracy, top-5 accuracy, coarse accuracy, and explicit fine/coarse consistency. Notes: see DESIGN_NOTES.md."
+notes: "Run evaluate_{train,test}.sh over existing final prediction artifacts; populate scores_train.json and scores_test.json."

@@ -1,49 +1,27 @@
 #!/bin/bash
-# Example job script submitted via the end-of-turn YAML block.
-#
-# This runs inside the compute container with:
-#   - Your workspace mounted at /home/user
-#   - GPU(s) available
-#   - No internet access
-#
-# Make sure all data, code, and dependencies are already in the
-# workspace or baked into the container before submitting.
+# Run the ResearchGym train/test evaluation split over existing final predictions.
 
-set -e
+set -euo pipefail
 
 cd /home/user
 
 python - <<'PY'
 from pathlib import Path
-required = Path("data/downloads/cifar-100-python/train")
-if not required.exists():
-    raise SystemExit("CIFAR-100 is missing. Run scripts/download.sh before submitting.")
+
+prediction_dir = Path("outputs/predictions")
+required = [
+    prediction_dir / "baseline_ce.npz",
+    prediction_dir / "hier_cos.npz",
+]
+missing = [str(path) for path in required if not path.exists()]
+if missing:
+    raise SystemExit(
+        "Missing final prediction artifact(s): " + ", ".join(missing)
+    )
 PY
 
-mkdir -p outputs/predictions checkpoints scoring
+mkdir -p scoring
+rm -f scoring/scores_train.json scoring/scores_test.json
 
-rm -f outputs/predictions/baseline_ce.npz outputs/predictions/hier_cos.npz
-
-python -m baseline.train_ce \
-  --run-name baseline_ce \
-  --epochs "${EPOCHS:-100}" \
-  --batch-size "${BATCH_SIZE:-64}" \
-  --lr "${LR:-0.1}" \
-  --weight-decay 0.0005 \
-  --optimizer sgd \
-  --backbone official_wrn28_8 \
-  --hierarchy paper_l5
-
-python -m method.train_hiercos \
-  --run-name hier_cos \
-  --epochs "${EPOCHS:-100}" \
-  --batch-size "${BATCH_SIZE:-64}" \
-  --lr "${LR:-0.1}" \
-  --weight-decay 0.0005 \
-  --optimizer sgd \
-  --backbone official_wrn28_8 \
-  --alpha "${ALPHA:-0.05}" \
-  --hierarchy paper_l5
-
-bash scripts/evaluate.sh outputs/predictions
-python validate.py --compare
+bash scripts/evaluate_train.sh outputs/predictions
+bash scripts/evaluate_test.sh outputs/predictions
