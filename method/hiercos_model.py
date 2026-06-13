@@ -8,6 +8,8 @@ descendants; leaf logits are projection norms onto leaf subspaces.
 
 from __future__ import annotations
 
+import math
+
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -256,6 +258,7 @@ class OfficialHAFrameWideResNet(nn.Module):
         self.downsample = nn.Conv2d(self.features.out_dim, num_nodes, kernel_size=1, bias=False)
         self.bn2 = nn.BatchNorm1d(num_nodes, momentum=0.001)
         self.projection = NarrowResidualTransformationHead(num_nodes, num_nodes)
+        self._init_head_weights()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         out = self.features._features(x)
@@ -271,6 +274,10 @@ class OfficialHAFrameWideResNet(nn.Module):
         yield from self.downsample.parameters()
         yield from self.bn2.parameters()
         yield from self.projection.parameters()
+
+    def _init_head_weights(self) -> None:
+        n = self.downsample.kernel_size[0] * self.downsample.kernel_size[1] * self.downsample.out_channels
+        self.downsample.weight.data.normal_(0.0, math.sqrt(2.0 / n))
 
 
 def make_backbone(name: str, feature_dim: int = 256) -> nn.Module:
@@ -346,6 +353,8 @@ class FlatCE(nn.Module):
         super().__init__()
         self.backbone = make_backbone(backbone, feature_dim=256)
         self.classifier = nn.Linear(int(getattr(self.backbone, "out_dim", 256)), num_classes)
+        nn.init.xavier_normal_(self.classifier.weight)
+        self.classifier.bias.data.zero_()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.classifier(self.backbone(x))

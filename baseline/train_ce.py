@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from data.cifar100_dataset import Cifar100Pickle, maybe_subset
 from data.cifar100_hierarchy import build_hierarchy
-from method.hiercos_model import FlatCE
+from baseline.models import FlatCE
 
 
 def main() -> None:

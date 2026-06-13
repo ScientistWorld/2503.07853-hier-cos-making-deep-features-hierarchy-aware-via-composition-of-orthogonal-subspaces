@@ -4,6 +4,11 @@
 
 ## Progress Log
 
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
 ### [2026-06-13 21:52] - core_claim_plus
 - Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
 - Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.

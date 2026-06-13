@@ -40,6 +40,8 @@
 ## Current Follow-up Run
 
 - Audited the previous `core_claim_plus` result and found the implementation real and evaluation method-independent.
+- Continuation audit confirmed the reproduction is not a surrogate: `method/` implements node-coordinate subspaces, path-distribution training targets, level regularization, and projection-norm inference, while `eval/` reads saved `.npz` outputs without importing `method/`.
+- Fixed audit hygiene issues by making the CE baseline independent of `method/` and removing generated job/trajectory artifacts from the tracked repository index. The local `README.md` path is bind-mounted to `/dev/null` by the runtime and cannot be unmounted without superuser privileges, but the repository blob remains normal markdown.
 - The main gap was experimental fidelity: previous runs used the public CIFAR coarse/fine taxonomy rather than the paper's 5-level hierarchy.
 - Updated data, method, baseline, evaluation, and run scripts to use `paper_l5`.
 - Completed a WRN-16-4 `paper_l5` run. Hier-COS improved hierarchy-aware ranking over CE (HOPS 0.843 vs 0.593; HOPS@20 0.647 vs 0.245; AHD@5 1.495 vs 2.050), but top-1 accuracy and FPA were about 10 points lower. The Hier-COS training curve was still improving at epoch 16, so a longer method run is being submitted.
