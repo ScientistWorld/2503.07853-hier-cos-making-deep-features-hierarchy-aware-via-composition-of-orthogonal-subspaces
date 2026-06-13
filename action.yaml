@@ -1,5 +1,5 @@
-action: submit
+action: done
 gpus: 0
 test: false
 milestone: secondary_claims
-notes: "Rerun train/test scoring after fixing hierarchy-level coarse metrics to use explicit finest non-leaf predictions."
+notes: "Fine-label-stratified complementary 50/50 split; 26 train metric values and 26 test metric values; hier_cos HOPS 0.9435 train / 0.9374 test vs cross_entropy 0.5566 / 0.5545; caveat: fine_coarse_consistency is high but non-identical and low-weight."
