@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from data.cifar100_hierarchy import FINE_TO_COARSE, Cifar100Hierarchy, build_hierarchy
+from data.cifar100_hierarchy import Cifar100Hierarchy, build_hierarchy
 
 
 SLICE_NAME = "test"
@@ -65,12 +65,15 @@ def evaluate_prediction_arrays(obj: dict[str, np.ndarray]) -> dict[str, float]:
     pred = leaf_scores.argmax(axis=1)
     top_order = np.argsort(-leaf_scores, axis=1)
 
-    coarse_labels = obj["coarse_labels"].astype(int) if "coarse_labels" in obj else np.array(FINE_TO_COARSE)[labels]
-    has_coarse_scores = "coarse_scores" in obj
-    if has_coarse_scores:
-        coarse_pred = obj["coarse_scores"].astype(float).argmax(axis=1)
+    hierarchy_level_labels = np.array(hierarchy.fine_to_level_labels, dtype=int)
+    coarse_level = finest_non_leaf_level(hierarchy)
+    coarse_labels = hierarchy_level_labels[labels, coarse_level]
+    coarse_scores = explicit_coarse_scores(obj, hierarchy, coarse_level)
+    has_coarse_scores = coarse_scores is not None
+    if coarse_scores is not None:
+        coarse_pred = coarse_scores.argmax(axis=1)
     else:
-        coarse_pred = np.array(FINE_TO_COARSE)[pred]
+        coarse_pred = hierarchy_level_labels[pred, coarse_level]
 
     distance_matrix = lca_distance_matrix(hierarchy)
     dists_top = distance_matrix[labels, pred]
@@ -92,7 +95,7 @@ def evaluate_prediction_arrays(obj: dict[str, np.ndarray]) -> dict[str, float]:
         "macro_accuracy": macro_accuracy(labels, pred, leaf_scores.shape[1]),
         "top5_accuracy": topk_accuracy(labels, top_order, 5),
         "coarse_accuracy": float((coarse_pred == coarse_labels).mean() * 100.0),
-        "fine_coarse_consistency": fine_coarse_consistency(coarse_pred, pred) if has_coarse_scores else 0.0,
+        "fine_coarse_consistency": fine_coarse_consistency(coarse_pred, pred, hierarchy, coarse_level) if has_coarse_scores else 0.0,
         "ms": ms,
         "ahd@1": float(dists_top.mean()),
         "ahd@5": ahd_at_k(labels, top_order, 5, distance_matrix),
@@ -119,8 +122,31 @@ def topk_accuracy(labels: np.ndarray, top_order: np.ndarray, k: int) -> float:
     return float(np.mean(hits) * 100.0) if hits else 0.0
 
 
-def fine_coarse_consistency(coarse_pred: np.ndarray, fine_pred: np.ndarray) -> float:
-    fine_parent = np.array(FINE_TO_COARSE)[fine_pred]
+def finest_non_leaf_level(hierarchy: Cifar100Hierarchy) -> int:
+    return max(0, len(hierarchy.level_node_indices) - 2)
+
+
+def explicit_coarse_scores(
+    obj: dict[str, np.ndarray],
+    hierarchy: Cifar100Hierarchy,
+    coarse_level: int,
+) -> np.ndarray | None:
+    key = f"level_scores_{coarse_level}"
+    expected_width = len(hierarchy.level_node_indices[coarse_level])
+    if key in obj and obj[key].shape[1] == expected_width:
+        return obj[key].astype(float)
+    if "coarse_scores" in obj and obj["coarse_scores"].shape[1] == expected_width:
+        return obj["coarse_scores"].astype(float)
+    return None
+
+
+def fine_coarse_consistency(
+    coarse_pred: np.ndarray,
+    fine_pred: np.ndarray,
+    hierarchy: Cifar100Hierarchy,
+    coarse_level: int,
+) -> float:
+    fine_parent = np.array(hierarchy.fine_to_level_labels, dtype=int)[fine_pred, coarse_level]
     return float((coarse_pred == fine_parent).mean() * 100.0)
 
 

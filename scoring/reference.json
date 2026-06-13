@@ -23,12 +23,12 @@
         "coarse_accuracy": {
           "higher_is_better": true,
           "coefficient": 0.25,
-          "description": "Superclass accuracy that checks whether predictions remain useful at the coarser hierarchy level."
+          "description": "Accuracy at the finest non-leaf hierarchy level, checking whether predictions remain useful at the superclass-like level."
         },
         "fine_coarse_consistency": {
           "higher_is_better": true,
           "coefficient": 0.2,
-          "description": "Agreement between the predicted fine class's parent and an explicit submitted coarse prediction; missing coarse predictions receive zero."
+          "description": "Agreement between the predicted fine class's finest non-leaf parent and an explicit submitted hierarchy-level prediction; missing explicit predictions receive zero."
         },
         "ms": {
           "higher_is_better": false,

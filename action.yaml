@@ -2,4 +2,4 @@ action: submit
 gpus: 0
 test: false
 milestone: secondary_claims
-notes: "Run evaluate_{train,test}.sh over existing final prediction artifacts; populate scores_train.json and scores_test.json."
+notes: "Rerun train/test scoring after fixing hierarchy-level coarse metrics to use explicit finest non-leaf predictions."
