@@ -28,7 +28,8 @@ python -m baseline.train_ce \
   --epochs 12 \
   --batch-size 256 \
   --lr 0.001 \
-  --weight-decay 0.0005
+  --weight-decay 0.0005 \
+  --backbone wrn16_4
 
 python -m method.train_hiercos \
   --run-name hier_cos \
@@ -36,6 +37,7 @@ python -m method.train_hiercos \
   --batch-size 256 \
   --lr 0.001 \
   --weight-decay 0.0005 \
+  --backbone wrn16_4 \
   --alpha 0.05
 
 bash scripts/evaluate.sh outputs/predictions

@@ -45,6 +45,73 @@ class SmallCifarBackbone(nn.Module):
         return self.net(x)
 
 
+class WideBasicBlock(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int, stride: int) -> None:
+        super().__init__()
+        self.use_projection = in_channels != out_channels or stride != 1
+        self.bn1 = nn.BatchNorm2d(in_channels)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, 3, stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, 3, padding=1, bias=False)
+        self.shortcut = (
+            nn.Conv2d(in_channels, out_channels, 1, stride=stride, bias=False)
+            if self.use_projection
+            else nn.Identity()
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = F.relu(self.bn1(x), inplace=True)
+        shortcut = self.shortcut(out) if self.use_projection else x
+        out = self.conv1(out)
+        out = self.conv2(F.relu(self.bn2(out), inplace=True))
+        return out + shortcut
+
+
+class WideResNetBackbone(nn.Module):
+    """Compact CIFAR WideResNet backbone, matching the paper's backbone family."""
+
+    def __init__(self, depth: int = 16, widen_factor: int = 4, feature_dim: int = 256) -> None:
+        super().__init__()
+        if (depth - 4) % 6 != 0:
+            raise ValueError("WideResNet depth must satisfy depth = 6n + 4")
+        blocks_per_group = (depth - 4) // 6
+        channels = [16, 16 * widen_factor, 32 * widen_factor, 64 * widen_factor]
+        self.conv1 = nn.Conv2d(3, channels[0], 3, padding=1, bias=False)
+        self.group1 = self._make_group(channels[0], channels[1], blocks_per_group, stride=1)
+        self.group2 = self._make_group(channels[1], channels[2], blocks_per_group, stride=2)
+        self.group3 = self._make_group(channels[2], channels[3], blocks_per_group, stride=2)
+        self.bn = nn.BatchNorm2d(channels[3])
+        self.proj = nn.Sequential(
+            nn.Linear(channels[3], feature_dim),
+            nn.BatchNorm1d(feature_dim),
+            nn.ReLU(inplace=True),
+        )
+
+    @staticmethod
+    def _make_group(in_channels: int, out_channels: int, blocks: int, stride: int) -> nn.Sequential:
+        layers = [WideBasicBlock(in_channels, out_channels, stride)]
+        for _ in range(1, blocks):
+            layers.append(WideBasicBlock(out_channels, out_channels, 1))
+        return nn.Sequential(*layers)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.conv1(x)
+        out = self.group1(out)
+        out = self.group2(out)
+        out = self.group3(out)
+        out = F.relu(self.bn(out), inplace=True)
+        out = F.avg_pool2d(out, out.shape[-1])
+        return self.proj(out.flatten(1))
+
+
+def make_backbone(name: str, feature_dim: int = 256) -> nn.Module:
+    if name == "small":
+        return SmallCifarBackbone(feature_dim=feature_dim)
+    if name == "wrn16_4":
+        return WideResNetBackbone(depth=16, widen_factor=4, feature_dim=feature_dim)
+    raise ValueError(f"unknown backbone: {name}")
+
+
 class Transformation(nn.Module):
     """Five-layer HAFrame-style transform into the Hier-COS node space."""
 
@@ -68,9 +135,15 @@ class Transformation(nn.Module):
 
 
 class HierCOS(nn.Module):
-    def __init__(self, num_nodes: int, leaf_subspaces: list[list[int]], coarse_subspaces: list[list[int]]) -> None:
+    def __init__(
+        self,
+        num_nodes: int,
+        leaf_subspaces: list[list[int]],
+        coarse_subspaces: list[list[int]],
+        backbone: str = "small",
+    ) -> None:
         super().__init__()
-        self.backbone = SmallCifarBackbone(feature_dim=256)
+        self.backbone = make_backbone(backbone, feature_dim=256)
         self.transform = Transformation(256, num_nodes)
         self.register_buffer("leaf_mask", _subspace_mask(num_nodes, leaf_subspaces))
         self.register_buffer("coarse_mask", _subspace_mask(num_nodes, coarse_subspaces))
@@ -84,9 +157,9 @@ class HierCOS(nn.Module):
 
 
 class FlatCE(nn.Module):
-    def __init__(self, num_classes: int = 100) -> None:
+    def __init__(self, num_classes: int = 100, backbone: str = "small") -> None:
         super().__init__()
-        self.backbone = SmallCifarBackbone(feature_dim=256)
+        self.backbone = make_backbone(backbone, feature_dim=256)
         self.classifier = nn.Linear(256, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

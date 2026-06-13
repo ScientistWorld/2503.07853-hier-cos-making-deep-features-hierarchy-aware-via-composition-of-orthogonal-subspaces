@@ -1,6 +1,6 @@
 # Reproduction Milestones
 
-**Current: method_runs**
+**Current: core_claim**
 
 ## Progress Log
 
@@ -17,6 +17,11 @@
 ### [2026-06-13 20:52] - method_runs
 - Full-split job `56c4be57-6dc` failed before training due to a missing `--weight-decay` CLI argument in the trainer scripts.
 - Fixed the argument mismatch and prepared a rerun of the same full-split experiment.
+
+### [2026-06-13 21:00] - core_claim
+- Completed a full-split CIFAR-100 run with matched CE and Hier-COS models.
+- Hier-COS improved the primary hierarchical ranking metric HOPS from 0.432 to 0.624 and improved HOPS@5 from 0.163 to 0.504.
+- Top-1 accuracy remained comparable but slightly lower than CE, 58.10% versus 59.80%, so the next run upgrades the shared backbone toward the paper's WideResNet setting.
 
 ## Stop Justification
 - Not stopped.

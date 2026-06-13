@@ -14,3 +14,8 @@ The paper argues that common hierarchical metrics miss whether top-k predictions
 - CIFAR-100 Table 2 reports Hier-COS at 77.79% accuracy and 0.93 HOPS.
 - CIFAR-100 Table 4 reports Hier-COS FPA of 77.37%, above the listed hierarchical baselines.
 - iNaturalist-19 with frozen ViT features reports a large HOPS gain, 0.53 to 0.98, and higher top-1 accuracy.
+
+## Current Reproduction
+
+- Public CIFAR-100 coarse/fine hierarchy, compact single-seed run: Hier-COS improved HOPS from 0.432 to 0.624 versus CE, with 58.10% versus 59.80% top-1 accuracy.
+- A follow-up run uses a compact WideResNet-style backbone shared by CE and Hier-COS to better match the paper's CIFAR backbone family.

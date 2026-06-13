@@ -4,6 +4,7 @@
 
 - Paper read and core algorithm identified: fixed orthonormal node bases, composed ancestor/self/descendant subspaces, weighted path KL loss, sparsity regularizer, and projection-norm inference.
 - Implemented CIFAR-100 data loading, a public CIFAR hierarchy, Hier-COS training, a Cross Entropy baseline, and a method-independent evaluator.
+- Added a selectable CIFAR WideResNet-style backbone so CE and Hier-COS can be compared on a backbone family closer to the paper's setup.
 
 ## Results
 
@@ -17,17 +18,27 @@
 - This reaches `method_runs`: the paper's algorithm executes end-to-end and is evaluated from saved outputs.
 - This does not reach `core_claim`: the current subset/epoch setting does not yet demonstrate a clear Hier-COS advantage across the paper's benefit and constraint metrics.
 
+- Completed full-split run with the initial compact CNN backbone.
+
+| method | accuracy | HOPS | HOPS@5 | HOPS@20 | AHD@5 | FPA |
+|---|---:|---:|---:|---:|---:|---:|
+| cross_entropy | 59.80 | 0.4319 | 0.1631 | 0.5569 | 1.3974 | 58.57 |
+| hier_cos | 58.10 | 0.6237 | 0.5043 | 0.6869 | 1.1264 | 56.20 |
+
+- This reaches `core_claim` on the public CIFAR coarse/fine hierarchy: Hier-COS substantially improves hierarchical ranking quality while maintaining similar, though slightly lower, fine-grained accuracy.
+
 ## Remaining
 
-- Run a full-split training job with more epochs and inspect `scoring/scores.json`.
-- If Hier-COS still underperforms, tune alpha, learning rate, and transformation/backbone capacity while preserving the Hier-COS procedure.
+- Run the WideResNet-backbone comparison to improve the accuracy constraint and move closer to the paper's CIFAR setup.
+- If the stronger backbone preserves the hierarchy gain, update the final reproduction docs and consider stopping at `core_claim_plus`.
 
 ## Issues
 
 - The official repository exists at `https://github.com/Depanshu-Sani/Hier-COS`, but it has no license file. I did not vendor it into this redistributable benchmark.
 - The completed smoke job logs are available under `jobs/a03cbe21-134/`; the job exited with code 0 and produced checkpoints, prediction artifacts, and `scoring/scores.json`.
 - Full-split job `56c4be57-6dc` failed before training because `baseline.train_ce` did not accept the `--weight-decay` argument used by `scripts/run.sh`. Fixed by adding the optimizer flag to both baseline and Hier-COS trainers.
+- Full-split job `28048a2c-177` completed successfully and produced the first `core_claim` result.
 
 ## Deviations from Paper
 
-- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet, 45K train / 5K val / 10K test, and 5-seed reporting. Current compact setup: public CIFAR-100 20-coarse/100-fine hierarchy, a small CNN trained from scratch, and a first smoke run on a subset. This scales resources and uses a public hierarchy asset; it does not replace the Hier-COS algorithm.
+- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet, 45K train / 5K val / 10K test, and 5-seed reporting. Current compact setup: public CIFAR-100 20-coarse/100-fine hierarchy and single-seed runs. This scales resources and uses a public hierarchy asset; it does not replace the Hier-COS algorithm.

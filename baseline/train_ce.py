@@ -20,6 +20,7 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=3e-3)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
+    parser.add_argument("--backbone", choices=["small", "wrn16_4"], default="small")
     parser.add_argument("--train-limit", type=int, default=0)
     parser.add_argument("--test-limit", type=int, default=0)
     parser.add_argument("--seed", type=int, default=7)
@@ -35,7 +36,7 @@ def main() -> None:
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2, pin_memory=True)
     test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False, num_workers=2)
 
-    model = FlatCE(num_classes=100).to(device)
+    model = FlatCE(num_classes=100, backbone=args.backbone).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(1, args.epochs))
     for epoch in range(args.epochs):

@@ -30,5 +30,5 @@
 action: submit
 gpus: 1
 test: false
-milestone: method_runs
-notes: "Full-split CIFAR-100 run: train CE baseline for 12 epochs and Hier-COS for 16 epochs, then evaluate whether the core hierarchy-aware claim is supported."
+milestone: core_claim
+notes: "WideResNet-backbone CIFAR-100 run: rerun CE and Hier-COS with a shared WRN-16-4 backbone to improve the accuracy constraint while preserving the hierarchy-aware method."
