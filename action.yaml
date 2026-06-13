@@ -2,4 +2,4 @@ action: done
 gpus: 0
 test: false
 milestone: secondary_claims
-notes: "Final audit passed with validate.py --compare; workspace remains ready for gym use at secondary_claims."
+notes: "Final verification passed; method-agnostic docs, scoring, download portability, and train/test split are ready for gym use."

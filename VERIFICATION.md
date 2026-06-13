@@ -2,30 +2,25 @@
 
 ## Initial Assessment
 
-The workspace already had a completed `secondary_claims` reproduction. The claimed milestone is justified: the final CIFAR-100 run uses the paper's 5-level hierarchy and an official-style WRN-28-8 setup, with reproduced HOPS, accuracy, AHD, MS, and FPA close to the paper's reported CIFAR-100 values.
+The workspace started at `secondary_claims` with a completed CIFAR-100 reproduction of "Hier-COS: Making Deep Features Hierarchy-aware via Composition of Orthogonal Subspaces." The claimed milestone is justified: the final run uses the paper's 5-level CIFAR hierarchy, an official-style WRN-28-8 setup, the paper's hierarchy-aware training computation, and method-independent evaluation from saved prediction artifacts.
 
 ## Issues Found
 
-- Minor: `data/cifar100_hierarchy.py` exposed method-specific subspace convenience fields. This leaked solution structure into a problem/data file that from-scratch agents may see.
-- Minor: method-agnostic documentation named the proposed method/repository in `briefing/evaluation.md` and referenced a reproduction-specific backbone in `scoring/CONSTRAINTS.md`.
-- Critical for scoring hygiene: `reference.json` had nonzero coefficients for `macro_accuracy`, `top5_accuracy`, `coarse_accuracy`, and `fine_coarse_consistency`, but top-level `scores.json` did not include those metrics.
-- Cosmetic: generated `__pycache__` folders were present in the workspace.
+- Cosmetic: `briefing/evaluation.md` referred to the reference method as "the proposed hierarchy-aware classifier." This was not an algorithm leak, but it was less neutral than ideal for from-scratch agents.
+- Cosmetic: ignored local `__pycache__` folders were present after validation commands.
 
 ## Fixes Applied
 
-- Moved hierarchy-derived subspace composition out of `data/` and into `method/train_hiercos.py`.
-- Reworded `briefing/evaluation.md` and `scoring/CONSTRAINTS.md` to keep from-scratch-facing documentation method-safe.
-- Updated `eval/metrics.py` to compute all nonzero-scored metrics used by `reference.json`.
-- Backfilled `scoring/scores.json` with the missing metrics from the already recorded complementary train/test slices.
-- Removed generated `__pycache__` directories.
-- Verified the CIFAR-100 download URL with `curl -I -L --max-time 15`; it returns HTTP 200 with the expected archive size.
-- Ran `python validate.py --compare` and Python syntax checks. `validate.py` passes; it reports heuristic warnings for train/test split files because they use deterministic random slicing, but those files read saved prediction artifacts and do not import or rerun `method/`.
+- Reworded the strict method-agnostic evaluation brief to describe the reference result as the paper's best reported hierarchy-aware system, without naming or describing the algorithm.
+- Removed local ignored Python bytecode folders. A few read-only `__pycache__` folders under the ignored shared model cache could not be removed, but they are outside committed code and are not referenced by the workspace.
+- Verified `scripts/download.sh` is self-contained, writes to `data/downloads/`, contains no `shared/` reference, and its CIFAR-100 URL returns HTTP 200 with the expected archive size.
+- Ran `python validate.py --compare`. It passes. The validator emits heuristic warnings for `eval/train` and `eval/test` because they use deterministic random slicing, but both evaluators read saved `.npz` prediction artifacts and do not import or rerun `method/`.
 
 ## Final Judgment
 
-The workspace is ready to serve as a research gym. Improve-mode agents can run the provided method and compare against the reproduced scores. From-scratch agents can use the problem/data/eval surface without seeing method-specific representation details in the strict method-agnostic files. Scoring now includes every metric with a nonzero coefficient for both reproduced methods.
+The workspace is ready to serve as a research gym. Improve-mode agents have a working method, baseline, reproduction script, and recorded scores. From-scratch agents can use the problem, data, and evaluation surface without method imports or solution-specific data leakage. The scoring rubric emphasizes the primary HOPS metric while preserving constraints for fine-label accuracy, full-path accuracy, hierarchy distance, top-k behavior, and multi-level consistency.
 
 - Milestone: secondary_claims
 - Ready for gym use: yes
 - Confidence: high
-- Key limitation: single-seed CIFAR-100 reproduction only; additional datasets and multi-seed reporting remain future extensions.
+- Key limitation: CIFAR-100 single-seed reproduction only; multi-seed reporting and the paper's other datasets remain future extensions.

@@ -8,7 +8,7 @@ Accuracy and FPA are percentages where higher is better. FPA requires both the f
 
 ## Baselines and Targets
 
-The reference target is the paper's CIFAR-100 result for the flat cross-entropy baseline and the proposed hierarchy-aware classifier in Table 2, plus the CIFAR-100 FPA value from Table 4. The primary runnable benchmark uses the released 5-level CIFAR hierarchy table associated with the paper.
+The reference targets are the paper's CIFAR-100 numbers for the flat cross-entropy baseline and the best reported hierarchy-aware system in Table 2, plus the CIFAR-100 FPA values from Table 4. The primary runnable benchmark uses the released 5-level CIFAR hierarchy table associated with the paper.
 
 ## Evaluation Protocol
 
