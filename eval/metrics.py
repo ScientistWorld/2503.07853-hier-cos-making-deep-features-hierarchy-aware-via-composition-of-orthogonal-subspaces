@@ -157,7 +157,7 @@ def evaluate_all(prediction_dir: Path, output_path: Path) -> dict:
             "cifar100_hierarchical_classification": {
                 "results": results,
                 "_meta": {
-                    "hierarchy": "public CIFAR-100 20-coarse/100-fine taxonomy",
+                    "hierarchy": hierarchy.name,
                     "num_nodes": hierarchy.num_nodes,
                     "prediction_dir": str(prediction_dir),
                 },

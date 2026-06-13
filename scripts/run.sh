@@ -20,21 +20,22 @@ if not required.exists():
     raise SystemExit("CIFAR-100 is missing. Run scripts/download.sh before submitting.")
 PY
 
-rm -rf outputs/predictions
 mkdir -p outputs/predictions checkpoints scoring
 
-python -m baseline.train_ce \
-  --run-name baseline_ce \
-  --epochs 12 \
-  --batch-size 256 \
-  --lr 0.001 \
-  --weight-decay 0.0005 \
-  --backbone wrn16_4 \
-  --hierarchy paper_l5
+if [ ! -e outputs/predictions/baseline_ce.npz ]; then
+  python -m baseline.train_ce \
+    --run-name baseline_ce \
+    --epochs 12 \
+    --batch-size 256 \
+    --lr 0.001 \
+    --weight-decay 0.0005 \
+    --backbone wrn16_4 \
+    --hierarchy paper_l5
+fi
 
 python -m method.train_hiercos \
   --run-name hier_cos \
-  --epochs 16 \
+  --epochs 48 \
   --batch-size 256 \
   --lr 0.001 \
   --weight-decay 0.0005 \

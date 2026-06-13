@@ -24,3 +24,8 @@
 - Continuing audit reset the active milestone to `core_claim`.
 - Verified the implementation is the paper's algorithm and evaluation is independent, then extended the benchmark to the paper's 5-level CIFAR hierarchy.
 - Submitting a WRN-16-4 CE vs Hier-COS run on `paper_l5` before restoring or advancing the milestone.
+
+### [2026-06-13 21:28] - core_claim
+- Completed the first `paper_l5` WRN-16-4 run.
+- Hier-COS improved the hierarchy-aware benefit metrics over CE on the paper hierarchy, including HOPS 0.843 vs 0.593 and AHD@5 1.495 vs 2.050.
+- Accuracy and FPA lagged the CE constraint metrics, and training was still improving at epoch 16; submitting a longer method run to improve the constraint side.
