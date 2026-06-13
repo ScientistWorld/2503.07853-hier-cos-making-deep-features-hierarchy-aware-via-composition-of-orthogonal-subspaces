@@ -47,6 +47,7 @@
 - A matched 48-epoch CE baseline is being submitted so the final `paper_l5` comparison uses equal training duration.
 - The matched 48-epoch CE baseline reached 70.77% accuracy and 70.29 FPA while Hier-COS retained much better hierarchy metrics (HOPS 0.893 vs 0.582 and HOPS@20 0.754 vs 0.222) but lower accuracy/FPA.
 - Auditing the official code revealed two implementation mismatches in the Hier-COS loss: path weights are squared after L2 normalization, and the auxiliary regularizer is computed after level-wise normalization rather than global coordinate normalization. These have been fixed and a new 48-epoch Hier-COS run is being submitted.
+- The first official-loss run at the paper's CIFAR alpha `0.05` underfit in this reduced WRN-16-4 setup: accuracy 37.59, FPA 36.32, HOPS 0.788. Because the paper reports alpha sensitivity down to `1e-4` with stable HOPS, the next run uses alpha `0.005` while keeping the same algorithm and training duration.
 
 ## Remaining
 
@@ -62,6 +63,7 @@
 - Paper-hierarchy job `09d14c43-2ba` completed successfully but used 16 Hier-COS epochs and showed a weak accuracy/FPA constraint.
 - Paper-hierarchy job `973d91a6-4e7` completed successfully with 48 Hier-COS epochs and improved both hierarchy metrics and accuracy/FPA over the existing 12-epoch CE artifact.
 - Matched paper-hierarchy baseline job `8a6756b8-bde` completed successfully; it showed the 48-epoch CE baseline is stronger on top-1/FPA, motivating a closer official-code loss fix.
+- Official-loss paper-hierarchy job `e843f015-125` completed successfully but underfit at alpha `0.05`; a lower-alpha method run is being submitted.
 
 ## Deviations from Paper
 

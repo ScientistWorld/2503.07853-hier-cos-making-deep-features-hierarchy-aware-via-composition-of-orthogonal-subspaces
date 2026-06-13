@@ -39,3 +39,7 @@
 - Completed the matched 48-epoch CE run on `paper_l5`.
 - Hier-COS still strongly improves HOPS and AHD over CE, but CE has higher top-1 accuracy and FPA under matched epochs.
 - Fixed the Hier-COS loss to match the official implementation more closely and submitting a new 48-epoch method run.
+
+### [2026-06-13 21:53] - core_claim
+- The official-loss alpha `0.05` run completed but underfit the reduced setup: 37.59% accuracy with HOPS 0.788.
+- Since the paper's alpha sensitivity includes smaller values with similar hierarchy performance, submitting an alpha `0.005` Hier-COS run.
