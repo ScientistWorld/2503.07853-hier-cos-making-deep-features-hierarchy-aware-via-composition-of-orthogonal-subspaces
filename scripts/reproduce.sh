@@ -18,7 +18,9 @@ set -e
 
 cd /home/user
 
-# TODO: implement full reproduction pipeline
-# e.g.:
-#   bash scripts/baseline.sh
-#   bash scripts/method.sh
+bash scripts/download.sh
+rm -rf outputs/predictions
+mkdir -p outputs/predictions
+bash scripts/baseline.sh --run-name baseline_ce --epochs "${EPOCHS:-8}" --batch-size "${BATCH_SIZE:-128}"
+bash scripts/method.sh --run-name hier_cos --epochs "${EPOCHS:-8}" --batch-size "${BATCH_SIZE:-128}"
+bash scripts/evaluate.sh outputs/predictions

@@ -1,0 +1,46 @@
+{
+  "experiments": {
+    "cifar100_hierarchical_classification": {
+      "description": "CIFAR-100 hierarchical classification reported in Table 2 and Table 4. The paper uses the 5-level CIFAR hierarchy; this workspace's compact first run evaluates the same metrics on the public CIFAR coarse/fine hierarchy and documents that deviation.",
+      "weight": 1.0,
+      "primary_metric": "hops",
+      "metrics": {
+        "accuracy": {"higher_is_better": true, "coefficient": 0.5},
+        "ms": {"higher_is_better": false, "coefficient": -0.2},
+        "ahd@1": {"higher_is_better": false, "coefficient": -0.2},
+        "ahd@5": {"higher_is_better": false, "coefficient": -0.3},
+        "ahd@20": {"higher_is_better": false, "coefficient": -0.3},
+        "hops": {"higher_is_better": true, "coefficient": 1.0},
+        "hops@5": {"higher_is_better": true, "coefficient": 0.5},
+        "hops@20": {"higher_is_better": true, "coefficient": 0.5},
+        "fpa": {"higher_is_better": true, "coefficient": 0.4}
+      },
+      "results": {
+        "cross_entropy": {
+          "type": "baseline",
+          "accuracy": 77.77,
+          "ms": 2.33,
+          "ahd@1": 0.52,
+          "ahd@5": 2.25,
+          "ahd@20": 3.19,
+          "hops": 0.54,
+          "hops@5": 0.05,
+          "hops@20": 0.17,
+          "fpa": 77.11
+        },
+        "hier_cos": {
+          "type": "proposed",
+          "accuracy": 77.79,
+          "ms": 2.21,
+          "ahd@1": 0.49,
+          "ahd@5": 1.09,
+          "ahd@20": 2.17,
+          "hops": 0.93,
+          "hops@5": 0.76,
+          "hops@20": 0.85,
+          "fpa": 77.37
+        }
+      }
+    }
+  }
+}

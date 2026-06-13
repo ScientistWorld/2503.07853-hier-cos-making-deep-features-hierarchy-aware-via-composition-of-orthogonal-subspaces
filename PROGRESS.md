@@ -2,36 +2,23 @@
 
 ## What Works
 
-<!-- What has been successfully reproduced so far. -->
+- Paper read and core algorithm identified: fixed orthonormal node bases, composed ancestor/self/descendant subspaces, weighted path KL loss, sparsity regularizer, and projection-norm inference.
+- Implemented CIFAR-100 data loading, a public CIFAR hierarchy, Hier-COS training, a Cross Entropy baseline, and a method-independent evaluator.
 
 ## Results
 
-<!-- Reproduced numbers compared to the paper's reported numbers. -->
+- No compute-job results yet. The first submitted job is a 2-epoch smoke run on 6,000 CIFAR-100 training images and 2,000 test images.
 
 ## Remaining
 
-<!-- What still needs to be done to reach higher milestones. -->
+- Run the smoke job and inspect `scoring/scores.json`.
+- If Hier-COS improves hierarchical metrics over the baseline, scale training up toward the full CIFAR-100 split.
+- If results are weak, tune epoch count, alpha, learning rate, or the transformation/backbone capacity while preserving the Hier-COS procedure.
 
 ## Issues
 
-<!-- Blockers, bugs, or difficulties encountered. -->
+- The official repository exists at `https://github.com/Depanshu-Sani/Hier-COS`, but it has no license file. I did not vendor it into this redistributable benchmark.
 
 ## Deviations from Paper
 
-<!-- Do not edit this section unless you deviated from the paper's original setup.
-     For each deviation, document: what the paper used, what you substituted, and why.
-
-     ACCEPTABLE deviations (data/resource/scale substitutions — milestones still valid):
-       - Replaced a proprietary dataset with a public one
-       - Used a smaller model of the same architecture
-       - Scaled down training (fewer epochs, smaller batch)
-       - Used a different library for the same algorithm
-
-     UNACCEPTABLE deviations (algorithm substitutions — milestones above 'none' are void):
-       - Replaced the paper's algorithm with a fundamentally different one
-       - Wrote a generic model trained to approximate the method's outputs
-         instead of implementing the method's computational steps
-
-     The test: could someone reading your code identify which algorithm from
-     the paper you implemented? If not, you replaced the method. -->
-
+- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet, 45K train / 5K val / 10K test, and 5-seed reporting. Current compact setup: public CIFAR-100 20-coarse/100-fine hierarchy, a small CNN trained from scratch, and a first smoke run on a subset. This scales resources and uses a public hierarchy asset; it does not replace the Hier-COS algorithm.

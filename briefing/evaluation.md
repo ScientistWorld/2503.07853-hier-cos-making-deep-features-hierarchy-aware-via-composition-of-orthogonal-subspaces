@@ -1,15 +1,15 @@
 # Evaluation
 
-How success is measured. Describe only the metrics, targets, and evaluation procedure — do NOT describe the paper's method or how they achieved these results. Think of this as a general evaluation protocal for other scientists trying to solve the same problem, where they should not see this paper's solution.
-
 ## Metrics
 
-<!-- What metrics are used? How are they computed? What does higher/lower mean? -->
+The evaluator reads saved leaf-class score arrays and labels from `outputs/predictions/*.npz`.
+
+Accuracy and FPA are percentages where higher is better. FPA requires both the fine prediction and its associated coarse prediction to be correct. Mistake Severity is the average LCA distance over misclassified samples, where lower is better. AHD@k averages the LCA distance of the top-k predicted leaves over all samples, where lower is better. HOPS, HOPS@5, and HOPS@20 compare the predicted ranking against the taxonomy-induced preference order; higher is better.
 
 ## Baselines and Targets
 
-<!-- What performance levels exist as reference points? Include the paper's reported numbers as targets, and any standard baselines. A scientist agent should know what "good" looks like. -->
+The reference target is the paper's CIFAR-100 result for Cross Entropy and Hier-COS in Table 2, plus the CIFAR-100 FPA value from Table 4. The compact runnable benchmark uses the public CIFAR-100 coarse/fine hierarchy, so absolute hierarchical metric values are not expected to match the paper's 5-level hierarchy exactly.
 
 ## Evaluation Protocol
 
-<!-- How should evaluation be run? What data split, what conditions? Any important details about how to compare fairly (e.g., fixed seeds, specific test sets, averaging over runs). -->
+Run training scripts to write one `.npz` prediction artifact per method, then run `bash scripts/evaluate.sh outputs/predictions`. The evaluator is method-agnostic and does not import from `method/`. For fair comparison, evaluate on the same CIFAR-100 test split and the same hierarchy file in `data/`.

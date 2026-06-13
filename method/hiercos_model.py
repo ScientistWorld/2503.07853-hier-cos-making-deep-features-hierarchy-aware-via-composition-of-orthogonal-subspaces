@@ -1,0 +1,136 @@
+"""Hier-COS model components.
+
+This implements the paper's core computation: features are mapped into a
+coordinate system with one fixed orthonormal basis vector per hierarchy node.
+Each class is represented by the subspace spanned by its ancestors, itself, and
+descendants; leaf logits are projection norms onto leaf subspaces.
+"""
+
+from __future__ import annotations
+
+import torch
+from torch import nn
+import torch.nn.functional as F
+
+
+class SmallCifarBackbone(nn.Module):
+    def __init__(self, feature_dim: int = 256) -> None:
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(3, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2),
+            nn.Conv2d(64, 128, 3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(128, 128, 3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2),
+            nn.Conv2d(128, 256, 3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.AdaptiveAvgPool2d(1),
+            nn.Flatten(),
+            nn.Linear(256, feature_dim),
+            nn.BatchNorm1d(feature_dim),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Transformation(nn.Module):
+    """Five-layer HAFrame-style transform into the Hier-COS node space."""
+
+    def __init__(self, in_dim: int, num_nodes: int) -> None:
+        super().__init__()
+        layers: list[nn.Module] = []
+        current = in_dim
+        for _ in range(4):
+            layers.extend([nn.Linear(current, num_nodes), nn.BatchNorm1d(num_nodes), nn.PReLU(num_nodes)])
+            current = num_nodes
+        layers.append(nn.Linear(current, num_nodes, bias=False))
+        self.layers = nn.Sequential(*layers)
+        final = self.layers[-1]
+        assert isinstance(final, nn.Linear)
+        with torch.no_grad():
+            final.weight.copy_(torch.eye(num_nodes))
+        final.weight.requires_grad_(False)
+
+    def forward(self, z: torch.Tensor) -> torch.Tensor:
+        return self.layers(z)
+
+
+class HierCOS(nn.Module):
+    def __init__(self, num_nodes: int, leaf_subspaces: list[list[int]], coarse_subspaces: list[list[int]]) -> None:
+        super().__init__()
+        self.backbone = SmallCifarBackbone(feature_dim=256)
+        self.transform = Transformation(256, num_nodes)
+        self.register_buffer("leaf_mask", _subspace_mask(num_nodes, leaf_subspaces))
+        self.register_buffer("coarse_mask", _subspace_mask(num_nodes, coarse_subspaces))
+
+    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
+        coords = self.transform(self.backbone(x))
+        squared = coords.square()
+        leaf_scores = torch.sqrt(torch.matmul(squared, self.leaf_mask.t()).clamp_min(1e-12))
+        coarse_scores = torch.sqrt(torch.matmul(squared, self.coarse_mask.t()).clamp_min(1e-12))
+        return {"coords": coords, "leaf_scores": leaf_scores, "coarse_scores": coarse_scores}
+
+
+class FlatCE(nn.Module):
+    def __init__(self, num_classes: int = 100) -> None:
+        super().__init__()
+        self.backbone = SmallCifarBackbone(feature_dim=256)
+        self.classifier = nn.Linear(256, num_classes)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.classifier(self.backbone(x))
+
+
+def _subspace_mask(num_nodes: int, subspaces: list[list[int]]) -> torch.Tensor:
+    mask = torch.zeros(len(subspaces), num_nodes)
+    for row, dims in enumerate(subspaces):
+        mask[row, dims] = 1.0
+    return mask
+
+
+def path_targets(fine_labels: torch.Tensor, fine_to_coarse: list[int], num_nodes: int) -> torch.Tensor:
+    """Paper's weighted one-hot path distribution P."""
+    out = torch.zeros(fine_labels.numel(), num_nodes, device=fine_labels.device)
+    coarse_offset = 0
+    fine_offset = len(set(fine_to_coarse))
+    # For the two-level public CIFAR hierarchy h=2, so weights are exp(1/2), exp(1).
+    weights = torch.tensor([torch.exp(torch.tensor(0.5)), torch.exp(torch.tensor(1.0))], device=fine_labels.device)
+    weights = weights / weights.sum()
+    coarse = torch.tensor(fine_to_coarse, device=fine_labels.device, dtype=torch.long)[fine_labels]
+    out[torch.arange(fine_labels.numel(), device=fine_labels.device), coarse_offset + coarse] = weights[0]
+    out[torch.arange(fine_labels.numel(), device=fine_labels.device), fine_offset + fine_labels] = weights[1]
+    return out
+
+
+def hiercos_loss(
+    coords: torch.Tensor,
+    fine_labels: torch.Tensor,
+    fine_to_coarse: list[int],
+    num_nodes: int,
+    alpha: float,
+) -> torch.Tensor:
+    targets = path_targets(fine_labels, fine_to_coarse, num_nodes)
+    log_probs = F.log_softmax(coords.abs(), dim=1)
+    kl = F.kl_div(log_probs, targets, reduction="batchmean")
+
+    n_coarse = len(set(fine_to_coarse))
+    coarse = torch.tensor(fine_to_coarse, device=fine_labels.device, dtype=torch.long)[fine_labels]
+    coarse_slice = F.normalize(coords[:, :n_coarse], p=2, dim=1, eps=1e-8)
+    fine_slice = F.normalize(coords[:, n_coarse:], p=2, dim=1, eps=1e-8)
+    coarse_onehot = F.one_hot(coarse, n_coarse).float()
+    fine_onehot = F.one_hot(fine_labels, 100).float()
+    reg = (coarse_onehot - coarse_slice).abs().sum(dim=1).mean()
+    reg = reg + (fine_onehot - fine_slice).abs().sum(dim=1).mean()
+    return kl + alpha * reg

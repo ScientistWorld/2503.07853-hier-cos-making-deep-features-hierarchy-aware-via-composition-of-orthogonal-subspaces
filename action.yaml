@@ -27,8 +27,8 @@
 #   milestone: core_claim
 #   notes: "Reproduced the core claim. Environment packaged."
 
-action: pending
+action: submit
 gpus: 1
-test: false
+test: true
 milestone: none
-notes: ""
+notes: "GPU smoke test: install dependencies, train CE baseline and Hier-COS for 2 epochs on CIFAR-100 subset, then evaluate outputs."
