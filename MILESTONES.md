@@ -29,4 +29,4 @@
 - Accuracy remained comparable but lower than CE, 59.98% versus 61.21%, so the gym records both the hierarchy benefit and the fine-grained accuracy constraint.
 
 ## Stop Justification
-- Stopped at `core_claim_plus`. The reusable environment reproduces the core hierarchy-aware effect on two full-split settings, including a WideResNet-family backbone. Remaining gaps to `majority` or `full` are the paper's proprietary 5-level CIFAR hierarchy asset, full WideResNet paper scale, multi-seed reporting, and iNaturalist experiments.
+- Completed at milestone `core_claim_plus`.
