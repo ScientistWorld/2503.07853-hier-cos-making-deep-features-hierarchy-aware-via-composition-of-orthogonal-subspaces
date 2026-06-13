@@ -14,5 +14,9 @@
 - Verified that both the Cross Entropy baseline and the Hier-COS implementation train, write prediction artifacts, and score through `scripts/evaluate.sh`.
 - Smoke result does not yet support the core claim: Hier-COS improved HOPS@5 over the baseline, but accuracy and several hierarchy metrics remained weak.
 
+### [2026-06-13 20:52] - method_runs
+- Full-split job `56c4be57-6dc` failed before training due to a missing `--weight-decay` CLI argument in the trainer scripts.
+- Fixed the argument mismatch and prepared a rerun of the same full-split experiment.
+
 ## Stop Justification
 - Not stopped.

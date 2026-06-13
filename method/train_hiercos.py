@@ -19,6 +19,7 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=3e-3)
+    parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--alpha", type=float, default=5e-2)
     parser.add_argument("--train-limit", type=int, default=0)
     parser.add_argument("--test-limit", type=int, default=0)
@@ -41,7 +42,7 @@ def main() -> None:
         leaf_subspaces=hierarchy.leaf_to_subspace,
         coarse_subspaces=[hierarchy.node_to_subspace[i] for i in hierarchy.coarse_node_indices],
     ).to(device)
-    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
+    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(1, args.epochs))
 
     history = []

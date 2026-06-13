@@ -26,6 +26,7 @@
 
 - The official repository exists at `https://github.com/Depanshu-Sani/Hier-COS`, but it has no license file. I did not vendor it into this redistributable benchmark.
 - The completed smoke job logs are available under `jobs/a03cbe21-134/`; the job exited with code 0 and produced checkpoints, prediction artifacts, and `scoring/scores.json`.
+- Full-split job `56c4be57-6dc` failed before training because `baseline.train_ce` did not accept the `--weight-decay` argument used by `scripts/run.sh`. Fixed by adding the optimizer flag to both baseline and Hier-COS trainers.
 
 ## Deviations from Paper
 
