@@ -182,7 +182,9 @@ def path_targets(fine_labels: torch.Tensor, fine_to_path: list[list[int]], num_n
     weights = torch.exp(
         1.0 / torch.arange(height, 0, -1, device=fine_labels.device, dtype=torch.float32)
     )
-    weights = weights / weights.sum()
+    # The released Hier-COS code stores P as squared L2-normalized path weights,
+    # which sums to one and gives the finest levels the intended larger mass.
+    weights = (weights / weights.norm(p=2)).square()
     rows = torch.arange(fine_labels.numel(), device=fine_labels.device).unsqueeze(1).expand_as(paths)
     out[rows, paths] = weights.unsqueeze(0).expand_as(paths).float()
     return out
@@ -192,6 +194,8 @@ def hiercos_loss(
     coords: torch.Tensor,
     fine_labels: torch.Tensor,
     fine_to_path: list[list[int]],
+    fine_to_level_labels: list[list[int]],
+    level_node_indices: list[list[int]],
     num_nodes: int,
     alpha: float,
 ) -> torch.Tensor:
@@ -199,10 +203,17 @@ def hiercos_loss(
     log_probs = F.log_softmax(coords.abs(), dim=1)
     kl = F.kl_div(log_probs, targets, reduction="batchmean")
 
-    path_table = torch.tensor(fine_to_path, device=fine_labels.device, dtype=torch.long)
-    path_nodes = path_table[fine_labels]
-    active = torch.zeros_like(coords)
-    active.scatter_(1, path_nodes, 1.0)
-    normalized = F.normalize(coords, p=2, dim=1, eps=1e-8)
-    reg = (active - normalized).abs().sum(dim=1).mean()
+    label_table = torch.tensor(fine_to_level_labels, device=fine_labels.device, dtype=torch.long)
+    level_labels = label_table[fine_labels]
+    reg = coords.new_tensor(0.0)
+    for level, nodes in enumerate(level_node_indices):
+        node_tensor = torch.tensor(nodes, device=fine_labels.device, dtype=torch.long)
+        level_coords = coords[:, node_tensor].abs()
+        valid = level_labels[:, level] >= 0
+        if valid.any():
+            normalized = F.normalize(level_coords[valid], p=2, dim=1, eps=1e-8)
+            onehot = F.one_hot(level_labels[valid, level], num_classes=len(nodes)).float()
+            reg = reg + (onehot - normalized).abs().sum(dim=1).mean()
+        if (~valid).any():
+            reg = reg + level_coords[~valid].sum(dim=1).mean()
     return kl + alpha * reg

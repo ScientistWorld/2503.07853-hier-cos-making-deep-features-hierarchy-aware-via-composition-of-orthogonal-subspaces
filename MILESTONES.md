@@ -34,3 +34,8 @@
 - Completed the 48-epoch Hier-COS run on `paper_l5`.
 - Hier-COS now improves both hierarchy-aware metrics and the accuracy/FPA constraints against the existing 12-epoch CE artifact.
 - Submitting a matched 48-epoch CE run before restoring `core_claim_plus`, so the comparison is fair on training duration.
+
+### [2026-06-13 21:44] - core_claim
+- Completed the matched 48-epoch CE run on `paper_l5`.
+- Hier-COS still strongly improves HOPS and AHD over CE, but CE has higher top-1 accuracy and FPA under matched epochs.
+- Fixed the Hier-COS loss to match the official implementation more closely and submitting a new 48-epoch method run.

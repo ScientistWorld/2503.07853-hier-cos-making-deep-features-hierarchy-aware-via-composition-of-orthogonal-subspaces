@@ -45,6 +45,8 @@
 - Completed a WRN-16-4 `paper_l5` run. Hier-COS improved hierarchy-aware ranking over CE (HOPS 0.843 vs 0.593; HOPS@20 0.647 vs 0.245; AHD@5 1.495 vs 2.050), but top-1 accuracy and FPA were about 10 points lower. The Hier-COS training curve was still improving at epoch 16, so a longer method run is being submitted.
 - Completed the longer 48-epoch Hier-COS run. Against the existing 12-epoch CE artifact, Hier-COS reached accuracy 64.37 vs 60.89, FPA 63.19 vs 58.58, HOPS 0.893 vs 0.593, HOPS@20 0.754 vs 0.245, and AHD@5 1.272 vs 2.050.
 - A matched 48-epoch CE baseline is being submitted so the final `paper_l5` comparison uses equal training duration.
+- The matched 48-epoch CE baseline reached 70.77% accuracy and 70.29 FPA while Hier-COS retained much better hierarchy metrics (HOPS 0.893 vs 0.582 and HOPS@20 0.754 vs 0.222) but lower accuracy/FPA.
+- Auditing the official code revealed two implementation mismatches in the Hier-COS loss: path weights are squared after L2 normalization, and the auxiliary regularizer is computed after level-wise normalization rather than global coordinate normalization. These have been fixed and a new 48-epoch Hier-COS run is being submitted.
 
 ## Remaining
 
@@ -59,6 +61,7 @@
 - WRN-backbone job `2c36aa48-642` completed successfully and produced the final `core_claim_plus` result.
 - Paper-hierarchy job `09d14c43-2ba` completed successfully but used 16 Hier-COS epochs and showed a weak accuracy/FPA constraint.
 - Paper-hierarchy job `973d91a6-4e7` completed successfully with 48 Hier-COS epochs and improved both hierarchy metrics and accuracy/FPA over the existing 12-epoch CE artifact.
+- Matched paper-hierarchy baseline job `8a6756b8-bde` completed successfully; it showed the 48-epoch CE baseline is stronger on top-1/FPA, motivating a closer official-code loss fix.
 
 ## Deviations from Paper
 

@@ -58,7 +58,15 @@ def main() -> None:
             images = images.to(device)
             fine = fine.to(device)
             out = model(images)
-            loss = hiercos_loss(out["coords"], fine, hierarchy.fine_to_path, hierarchy.num_nodes, args.alpha)
+            loss = hiercos_loss(
+                out["coords"],
+                fine,
+                hierarchy.fine_to_path,
+                hierarchy.fine_to_level_labels,
+                hierarchy.level_node_indices,
+                hierarchy.num_nodes,
+                args.alpha,
+            )
             opt.zero_grad(set_to_none=True)
             loss.backward()
             opt.step()
