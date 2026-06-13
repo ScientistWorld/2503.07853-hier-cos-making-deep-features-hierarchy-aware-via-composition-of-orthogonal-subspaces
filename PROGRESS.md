@@ -6,6 +6,7 @@
 - Implemented CIFAR-100 data loading, a public CIFAR hierarchy, Hier-COS training, a Cross Entropy baseline, and a method-independent evaluator.
 - Added a selectable CIFAR WideResNet-style backbone so CE and Hier-COS can be compared on a backbone family closer to the paper's setup.
 - Added support for the paper's 5-level CIFAR hierarchy from the public Hier-COS target table while preserving the earlier public coarse/fine hierarchy as an ablation option.
+- Completed an official-style WRN-28-8 CIFAR-100 run with SGD/cosine on the paper's 5-level hierarchy, matching the main CIFAR result closely.
 
 ## Results
 
@@ -52,10 +53,11 @@
 - The first official-loss run at the paper's CIFAR alpha `0.05` underfit in this reduced WRN-16-4 setup: accuracy 37.59, FPA 36.32, HOPS 0.788. Because the paper reports alpha sensitivity down to `1e-4` with stable HOPS, the next run uses alpha `0.005` while keeping the same algorithm and training duration.
 - The alpha `0.005` official-loss run completed on the paper's 5-level CIFAR hierarchy. Compared with the matched 48-epoch CE baseline, Hier-COS improves HOPS 0.894 vs 0.582, HOPS@5 0.625 vs 0.088, HOPS@20 0.761 vs 0.222, AHD@5 1.257 vs 2.104, AHD@20 2.236 vs 3.058, and MS 2.279 vs 2.480. CE remains stronger on top-1 accuracy and FPA (70.77/70.29 vs 67.65/65.96), so the reproduced result supports the hierarchy-aware ranking claim while recording the constraint gap.
 - Added an official-style CIFAR path after auditing the released repository: WRN-28-8 feature blocks with batch-norm momentum `0.001`, an HAFrame-style coordinate head, SGD with cosine decay, classifier/head learning rate `0.1`, and backbone learning rate `0.01`. A normal GPU job is being submitted to run matched 100-epoch CE and Hier-COS experiments with this more faithful configuration.
+- The official-style WRN-28-8 job `20a211c5-6b2` completed successfully in 45 minutes. It reproduced the paper's CIFAR-100 primary and constraint results: CE reached 78.50 accuracy, 0.556 HOPS, 0.051 HOPS@5, 0.176 HOPS@20, and 78.04 FPA; Hier-COS reached 78.85 accuracy, 0.940 HOPS, 0.781 HOPS@5, 0.867 HOPS@20, and 78.73 FPA. These are close to the paper's reported CE 77.77/0.540/0.050/0.170/77.11 and Hier-COS 77.79/0.930/0.760/0.850/77.37.
 
 ## Remaining
 
-- To reach `majority` or `full`, future work would need multi-seed reporting and the iNaturalist-19/tieredImageNet-H setups. A paper-scale single-seed CIFAR WRN-28-8 run is currently queued.
+- To reach `majority` or `full`, future work would need multi-seed reporting and the iNaturalist-19/tieredImageNet-H setups. The CIFAR-100 core and FPA constraint are now covered by a faithful single-seed run.
 
 ## Issues
 
@@ -69,7 +71,8 @@
 - Matched paper-hierarchy baseline job `8a6756b8-bde` completed successfully; it showed the 48-epoch CE baseline is stronger on top-1/FPA, motivating a closer official-code loss fix.
 - Official-loss paper-hierarchy job `e843f015-125` completed successfully but underfit at alpha `0.05`; this motivated the lower-alpha follow-up.
 - Official-loss paper-hierarchy job `b1d37dfa-240` completed successfully at alpha `0.005`; it restored the core hierarchy-aware gains on the paper's 5-level CIFAR hierarchy.
+- Official-style WRN-28-8 job `20a211c5-6b2` completed successfully, wrote the final `scoring/scores.json`, and passed `python validate.py --compare`.
 
 ## Deviations from Paper
 
-- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet-28-8, 45K train / 5K val / 10K test, and 5-seed reporting. The current completed scores use the released 5-level CIFAR hierarchy and a smaller WRN-16-4 single-seed run. A closer single-seed WRN-28-8 run is being submitted; multi-seed reporting remains scaled down for budget.
+- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet-28-8, 45K train / 5K val / 10K test, and 5-seed reporting. The final completed scores use the released 5-level CIFAR hierarchy and official-style WRN-28-8, but train on the full 50K CIFAR training split without a validation holdout and report one seed rather than five.
