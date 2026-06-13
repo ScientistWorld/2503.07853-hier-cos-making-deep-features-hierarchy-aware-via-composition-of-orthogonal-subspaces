@@ -2,4 +2,4 @@ action: done
 gpus: 0
 test: false
 milestone: secondary_claims
-notes: "Packaging audit complete; CIFAR-100 download now uses the verified direct public URL."
+notes: "Validated final Hier-COS CIFAR-100 reproduction: official-style WRN-28-8 run matches the paper's HOPS/accuracy/FPA claims closely."
