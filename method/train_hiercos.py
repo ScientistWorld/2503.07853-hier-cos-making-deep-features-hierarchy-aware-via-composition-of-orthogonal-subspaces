@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from data.cifar100_dataset import Cifar100Pickle, maybe_subset
-from data.cifar100_hierarchy import build_hierarchy
+from data.cifar100_hierarchy import Cifar100Hierarchy, build_hierarchy
 from method.hiercos_model import HierCOS, hiercos_loss
 
 
@@ -22,6 +22,7 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--alpha", type=float, default=5e-2)
     parser.add_argument("--backbone", choices=["small", "wrn16_4"], default="small")
+    parser.add_argument("--hierarchy", choices=["public", "paper_l5"], default="public")
     parser.add_argument("--train-limit", type=int, default=0)
     parser.add_argument("--test-limit", type=int, default=0)
     parser.add_argument("--seed", type=int, default=7)
@@ -31,7 +32,7 @@ def main() -> None:
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    hierarchy = build_hierarchy()
+    hierarchy = build_hierarchy(args.hierarchy)
 
     train_set = maybe_subset(Cifar100Pickle(args.data_root, "train", augment=True), args.train_limit, args.seed)
     test_set = maybe_subset(Cifar100Pickle(args.data_root, "test", augment=False), args.test_limit, args.seed)
@@ -41,7 +42,7 @@ def main() -> None:
     model = HierCOS(
         num_nodes=hierarchy.num_nodes,
         leaf_subspaces=hierarchy.leaf_to_subspace,
-        coarse_subspaces=[hierarchy.node_to_subspace[i] for i in hierarchy.coarse_node_indices],
+        coarse_subspaces=[hierarchy.node_to_subspace[i] for i in hierarchy.level_node_indices[0]],
         backbone=args.backbone,
     ).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -57,7 +58,7 @@ def main() -> None:
             images = images.to(device)
             fine = fine.to(device)
             out = model(images)
-            loss = hiercos_loss(out["coords"], fine, hierarchy.fine_to_coarse, hierarchy.num_nodes, args.alpha)
+            loss = hiercos_loss(out["coords"], fine, hierarchy.fine_to_path, hierarchy.num_nodes, args.alpha)
             opt.zero_grad(set_to_none=True)
             loss.backward()
             opt.step()
@@ -72,30 +73,57 @@ def main() -> None:
     ckpt_dir = Path("checkpoints")
     pred_dir.mkdir(parents=True, exist_ok=True)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    labels, coarse_labels, leaf_scores, coarse_scores = predict(model, test_loader, device)
+    labels, coarse_labels, leaf_scores, coarse_scores, level_labels, level_scores = predict(model, test_loader, device, hierarchy)
+    save_kwargs = {
+        f"level_scores_{idx}": scores for idx, scores in enumerate(level_scores)
+    }
     np.savez_compressed(
         pred_dir / f"{args.run_name}.npz",
         method_name=args.run_name,
+        hierarchy=args.hierarchy,
         labels=labels,
         coarse_labels=coarse_labels,
         leaf_scores=leaf_scores,
         coarse_scores=coarse_scores,
+        level_labels=level_labels,
+        **save_kwargs,
     )
     torch.save({"model": model.state_dict(), "args": vars(args), "history": history}, ckpt_dir / f"{args.run_name}.pt")
     (ckpt_dir / f"{args.run_name}_history.json").write_text(json.dumps(history, indent=2))
 
 
 @torch.no_grad()
-def predict(model: HierCOS, loader: DataLoader, device: torch.device):
+def predict(model: HierCOS, loader: DataLoader, device: torch.device, hierarchy: Cifar100Hierarchy):
     model.eval()
     labels, coarse_labels, leaf_scores, coarse_scores = [], [], [], []
+    level_labels = []
+    level_scores = [[] for _ in hierarchy.level_node_indices]
+    level_masks = [
+        subspace_mask(hierarchy.num_nodes, [hierarchy.node_to_subspace[node] for node in nodes]).to(device)
+        for nodes in hierarchy.level_node_indices
+    ]
+    path_table = np.array(hierarchy.fine_to_level_labels, dtype=np.int64)
     for images, fine, coarse in loader:
         out = model(images.to(device))
         labels.append(fine.numpy())
         coarse_labels.append(coarse.numpy())
         leaf_scores.append(out["leaf_scores"].cpu().numpy())
         coarse_scores.append(out["coarse_scores"].cpu().numpy())
-    return map(lambda xs: np.concatenate(xs, axis=0), (labels, coarse_labels, leaf_scores, coarse_scores))
+        level_labels.append(path_table[fine.numpy()])
+        squared = out["coords"].square()
+        for idx, mask in enumerate(level_masks):
+            scores = torch.sqrt(torch.matmul(squared, mask.t()).clamp_min(1e-12))
+            level_scores[idx].append(scores.cpu().numpy())
+    base = tuple(map(lambda xs: np.concatenate(xs, axis=0), (labels, coarse_labels, leaf_scores, coarse_scores, level_labels)))
+    level_scores_np = [np.concatenate(xs, axis=0) for xs in level_scores]
+    return (*base, level_scores_np)
+
+
+def subspace_mask(num_nodes: int, subspaces: list[list[int]]) -> torch.Tensor:
+    mask = torch.zeros(len(subspaces), num_nodes)
+    for row, dims in enumerate(subspaces):
+        mask[row, dims] = 1.0
+    return mask
 
 
 if __name__ == "__main__":

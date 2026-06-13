@@ -1,7 +1,7 @@
 {
   "experiments": {
     "cifar100_hierarchical_classification": {
-      "description": "CIFAR-100 hierarchical classification reported in Table 2 and Table 4. The paper uses the 5-level CIFAR hierarchy; this workspace's compact first run evaluates the same metrics on the public CIFAR coarse/fine hierarchy and documents that deviation.",
+      "description": "CIFAR-100 hierarchical classification reported in Table 2 and Table 4 using the paper's 5-level CIFAR hierarchy.",
       "weight": 1.0,
       "primary_metric": "hops",
       "metrics": {

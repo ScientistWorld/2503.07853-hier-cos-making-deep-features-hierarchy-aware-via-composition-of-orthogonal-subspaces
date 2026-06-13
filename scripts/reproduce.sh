@@ -21,6 +21,6 @@ cd /home/user
 bash scripts/download.sh
 rm -rf outputs/predictions
 mkdir -p outputs/predictions
-bash scripts/baseline.sh --run-name baseline_ce --epochs "${EPOCHS:-12}" --batch-size "${BATCH_SIZE:-256}" --backbone "${BACKBONE:-wrn16_4}"
-bash scripts/method.sh --run-name hier_cos --epochs "${EPOCHS:-16}" --batch-size "${BATCH_SIZE:-256}" --backbone "${BACKBONE:-wrn16_4}" --alpha "${ALPHA:-0.05}"
+bash scripts/baseline.sh --run-name baseline_ce --epochs "${BASELINE_EPOCHS:-12}" --batch-size "${BATCH_SIZE:-256}" --backbone "${BACKBONE:-wrn16_4}" --hierarchy "${HIERARCHY:-paper_l5}"
+bash scripts/method.sh --run-name hier_cos --epochs "${METHOD_EPOCHS:-16}" --batch-size "${BATCH_SIZE:-256}" --backbone "${BACKBONE:-wrn16_4}" --alpha "${ALPHA:-0.05}" --hierarchy "${HIERARCHY:-paper_l5}"
 bash scripts/evaluate.sh outputs/predictions

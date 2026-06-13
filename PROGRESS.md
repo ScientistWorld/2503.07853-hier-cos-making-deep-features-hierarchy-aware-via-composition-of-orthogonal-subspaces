@@ -5,6 +5,7 @@
 - Paper read and core algorithm identified: fixed orthonormal node bases, composed ancestor/self/descendant subspaces, weighted path KL loss, sparsity regularizer, and projection-norm inference.
 - Implemented CIFAR-100 data loading, a public CIFAR hierarchy, Hier-COS training, a Cross Entropy baseline, and a method-independent evaluator.
 - Added a selectable CIFAR WideResNet-style backbone so CE and Hier-COS can be compared on a backbone family closer to the paper's setup.
+- Added support for the paper's 5-level CIFAR hierarchy from the public Hier-COS target table while preserving the earlier public coarse/fine hierarchy as an ablation option.
 
 ## Results
 
@@ -36,9 +37,15 @@
 
 - This reaches `core_claim_plus`: the hierarchy-aware gain is reproduced on an additional, stronger shared backbone setting while explicitly tracking the accuracy and FPA constraints.
 
+## Current Follow-up Run
+
+- Audited the previous `core_claim_plus` result and found the implementation real and evaluation method-independent.
+- The main gap was experimental fidelity: previous runs used the public CIFAR coarse/fine taxonomy rather than the paper's 5-level hierarchy.
+- Updated data, method, baseline, evaluation, and run scripts to use `paper_l5`; a new WRN-16-4 comparison is being submitted to measure the core claim on the paper hierarchy.
+
 ## Remaining
 
-- To reach `majority` or `full`, future work would need the exact 5-level CIFAR hierarchy used by the paper, paper-scale WideResNet training, multi-seed reporting, and the iNaturalist-19 setup.
+- To reach `majority` or `full`, future work would need paper-scale WideResNet training, multi-seed reporting, and the iNaturalist-19 setup.
 
 ## Issues
 
@@ -50,4 +57,4 @@
 
 ## Deviations from Paper
 
-- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet, 45K train / 5K val / 10K test, and 5-seed reporting. Current compact setup: public CIFAR-100 20-coarse/100-fine hierarchy and single-seed runs. This scales resources and uses a public hierarchy asset; it does not replace the Hier-COS algorithm.
+- Paper setup: CIFAR-100 uses a 5-level hierarchy from prior work, WideResNet, 45K train / 5K val / 10K test, and 5-seed reporting. Current submitted setup uses the released 5-level CIFAR hierarchy and a smaller WRN-16-4 single-seed run. This scales resources; it does not replace the Hier-COS algorithm.

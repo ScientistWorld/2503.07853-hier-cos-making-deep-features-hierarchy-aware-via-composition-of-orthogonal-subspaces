@@ -5,11 +5,13 @@ from pathlib import Path
 
 import numpy as np
 
-from data.cifar100_hierarchy import FINE_TO_COARSE, build_hierarchy, lca_distance
+from data.cifar100_hierarchy import FINE_TO_COARSE, Cifar100Hierarchy, build_hierarchy
 
 
 def evaluate_prediction_file(path: Path) -> dict[str, float]:
     obj = np.load(path, allow_pickle=True)
+    hierarchy_name = str(obj["hierarchy"]) if "hierarchy" in obj else "public"
+    hierarchy = build_hierarchy(hierarchy_name)
     labels = obj["labels"].astype(int)
     leaf_scores = obj["leaf_scores"].astype(float)
     pred = leaf_scores.argmax(axis=1)
@@ -21,37 +23,61 @@ def evaluate_prediction_file(path: Path) -> dict[str, float]:
     else:
         coarse_pred = np.array(FINE_TO_COARSE)[pred]
 
-    dists_top = np.vectorize(lca_distance)(labels, pred)
+    distance_matrix = lca_distance_matrix(hierarchy)
+    dists_top = distance_matrix[labels, pred]
     wrong = pred != labels
     ms = float(dists_top[wrong].mean()) if wrong.any() else 0.0
+    if "level_labels" in obj and any(f"level_scores_{idx}" in obj for idx in range(len(hierarchy.level_node_indices))):
+        level_labels = obj["level_labels"].astype(int)
+        correct_path = np.ones(labels.shape[0], dtype=bool)
+        for idx in range(len(hierarchy.level_node_indices)):
+            key = f"level_scores_{idx}"
+            if key in obj:
+                correct_path &= obj[key].astype(float).argmax(axis=1) == level_labels[:, idx]
+        fpa = float(correct_path.mean() * 100.0)
+    else:
+        fpa = float(((pred == labels) & (coarse_pred == coarse_labels)).mean() * 100.0)
 
     metrics = {
         "accuracy": float((pred == labels).mean() * 100.0),
         "ms": ms,
         "ahd@1": float(dists_top.mean()),
-        "ahd@5": ahd_at_k(labels, top_order, 5),
-        "ahd@20": ahd_at_k(labels, top_order, 20),
-        "hops": hops(labels, top_order, None),
-        "hops@5": hops(labels, top_order, 5),
-        "hops@20": hops(labels, top_order, 20),
-        "fpa": float(((pred == labels) & (coarse_pred == coarse_labels)).mean() * 100.0),
+        "ahd@5": ahd_at_k(labels, top_order, 5, distance_matrix),
+        "ahd@20": ahd_at_k(labels, top_order, 20, distance_matrix),
+        "hops": hops(labels, top_order, None, distance_matrix),
+        "hops@5": hops(labels, top_order, 5, distance_matrix),
+        "hops@20": hops(labels, top_order, 20, distance_matrix),
+        "fpa": fpa,
     }
     return metrics
 
 
-def ahd_at_k(labels: np.ndarray, top_order: np.ndarray, k: int) -> float:
+def lca_distance_matrix(hierarchy: Cifar100Hierarchy) -> np.ndarray:
+    distances = np.zeros((100, 100), dtype=float)
+    for i, path_i in enumerate(hierarchy.fine_to_path):
+        for j, path_j in enumerate(hierarchy.fine_to_path):
+            common_depth = -1
+            for depth, (node_i, node_j) in enumerate(zip(path_i, path_j)):
+                if node_i != node_j:
+                    break
+                common_depth = depth
+            distances[i, j] = len(path_i) - 1 - common_depth
+    return distances
+
+
+def ahd_at_k(labels: np.ndarray, top_order: np.ndarray, k: int, distance_matrix: np.ndarray) -> float:
     k = min(k, top_order.shape[1])
     vals = []
     for y, order in zip(labels, top_order[:, :k]):
-        vals.extend(lca_distance(int(y), int(p)) for p in order)
+        vals.extend(distance_matrix[int(y), order])
     return float(np.mean(vals))
 
 
-def hops(labels: np.ndarray, top_order: np.ndarray, k: int | None) -> float:
+def hops(labels: np.ndarray, top_order: np.ndarray, k: int | None, distance_matrix: np.ndarray) -> float:
     values = []
     for y, order in zip(labels, top_order):
-        desired = desired_rank_vector(int(y))
-        rank_lookup = desired_rank_lookup(int(y))
+        desired = desired_rank_vector(int(y), distance_matrix)
+        rank_lookup = desired_rank_lookup(int(y), distance_matrix)
         predicted = np.array([rank_lookup[int(cls)] for cls in order], dtype=float)
         z = np.array(desired, dtype=float)
         eta = eta_weights(z)
@@ -73,15 +99,15 @@ def hops(labels: np.ndarray, top_order: np.ndarray, k: int | None) -> float:
     return float(np.mean(values))
 
 
-def desired_rank_lookup(true_label: int) -> dict[int, int]:
-    distances = [lca_distance(true_label, other) for other in range(100)]
+def desired_rank_lookup(true_label: int, distance_matrix: np.ndarray) -> dict[int, int]:
+    distances = distance_matrix[true_label].tolist()
     non_empty = sorted(set(distances))
     distance_to_rank = {dist: rank for rank, dist in enumerate(non_empty)}
     return {cls: distance_to_rank[dist] for cls, dist in enumerate(distances)}
 
 
-def desired_rank_vector(true_label: int) -> list[int]:
-    lookup = desired_rank_lookup(true_label)
+def desired_rank_vector(true_label: int, distance_matrix: np.ndarray) -> list[int]:
+    lookup = desired_rank_lookup(true_label, distance_matrix)
     counts: dict[int, int] = {}
     for rank in lookup.values():
         counts[rank] = counts.get(rank, 0) + 1
@@ -111,7 +137,6 @@ def eta_weights(z: np.ndarray) -> np.ndarray:
 
 
 def evaluate_all(prediction_dir: Path, output_path: Path) -> dict:
-    hierarchy = build_hierarchy()
     results = {}
     name_map = {
         "baseline_ce": "cross_entropy",
@@ -120,10 +145,13 @@ def evaluate_all(prediction_dir: Path, output_path: Path) -> dict:
         "baseline_ce_smoke": "cross_entropy",
     }
     for npz in sorted(prediction_dir.glob("*.npz")):
-        method_name = str(np.load(npz, allow_pickle=True)["method_name"])
+        loaded = np.load(npz, allow_pickle=True)
+        method_name = str(loaded["method_name"])
+        hierarchy_name = str(loaded["hierarchy"]) if "hierarchy" in loaded else "public"
         method_key = name_map.get(method_name, method_name)
         results[method_key] = evaluate_prediction_file(npz)
 
+    hierarchy = build_hierarchy(hierarchy_name if results else "public")
     scores = {
         "experiments": {
             "cifar100_hierarchical_classification": {

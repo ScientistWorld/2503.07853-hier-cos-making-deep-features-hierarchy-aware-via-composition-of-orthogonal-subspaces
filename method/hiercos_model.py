@@ -173,37 +173,36 @@ def _subspace_mask(num_nodes: int, subspaces: list[list[int]]) -> torch.Tensor:
     return mask
 
 
-def path_targets(fine_labels: torch.Tensor, fine_to_coarse: list[int], num_nodes: int) -> torch.Tensor:
+def path_targets(fine_labels: torch.Tensor, fine_to_path: list[list[int]], num_nodes: int) -> torch.Tensor:
     """Paper's weighted one-hot path distribution P."""
     out = torch.zeros(fine_labels.numel(), num_nodes, device=fine_labels.device)
-    coarse_offset = 0
-    fine_offset = len(set(fine_to_coarse))
-    # For the two-level public CIFAR hierarchy h=2, so weights are exp(1/2), exp(1).
-    weights = torch.tensor([torch.exp(torch.tensor(0.5)), torch.exp(torch.tensor(1.0))], device=fine_labels.device)
+    path_table = torch.tensor(fine_to_path, device=fine_labels.device, dtype=torch.long)
+    paths = path_table[fine_labels]
+    height = paths.shape[1]
+    weights = torch.exp(
+        1.0 / torch.arange(height, 0, -1, device=fine_labels.device, dtype=torch.float32)
+    )
     weights = weights / weights.sum()
-    coarse = torch.tensor(fine_to_coarse, device=fine_labels.device, dtype=torch.long)[fine_labels]
-    out[torch.arange(fine_labels.numel(), device=fine_labels.device), coarse_offset + coarse] = weights[0]
-    out[torch.arange(fine_labels.numel(), device=fine_labels.device), fine_offset + fine_labels] = weights[1]
+    rows = torch.arange(fine_labels.numel(), device=fine_labels.device).unsqueeze(1).expand_as(paths)
+    out[rows, paths] = weights.unsqueeze(0).expand_as(paths).float()
     return out
 
 
 def hiercos_loss(
     coords: torch.Tensor,
     fine_labels: torch.Tensor,
-    fine_to_coarse: list[int],
+    fine_to_path: list[list[int]],
     num_nodes: int,
     alpha: float,
 ) -> torch.Tensor:
-    targets = path_targets(fine_labels, fine_to_coarse, num_nodes)
+    targets = path_targets(fine_labels, fine_to_path, num_nodes)
     log_probs = F.log_softmax(coords.abs(), dim=1)
     kl = F.kl_div(log_probs, targets, reduction="batchmean")
 
-    n_coarse = len(set(fine_to_coarse))
-    coarse = torch.tensor(fine_to_coarse, device=fine_labels.device, dtype=torch.long)[fine_labels]
-    coarse_slice = F.normalize(coords[:, :n_coarse], p=2, dim=1, eps=1e-8)
-    fine_slice = F.normalize(coords[:, n_coarse:], p=2, dim=1, eps=1e-8)
-    coarse_onehot = F.one_hot(coarse, n_coarse).float()
-    fine_onehot = F.one_hot(fine_labels, 100).float()
-    reg = (coarse_onehot - coarse_slice).abs().sum(dim=1).mean()
-    reg = reg + (fine_onehot - fine_slice).abs().sum(dim=1).mean()
+    path_table = torch.tensor(fine_to_path, device=fine_labels.device, dtype=torch.long)
+    path_nodes = path_table[fine_labels]
+    active = torch.zeros_like(coords)
+    active.scatter_(1, path_nodes, 1.0)
+    normalized = F.normalize(coords, p=2, dim=1, eps=1e-8)
+    reg = (active - normalized).abs().sum(dim=1).mean()
     return kl + alpha * reg

@@ -21,6 +21,7 @@ def main() -> None:
     parser.add_argument("--lr", type=float, default=3e-3)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--backbone", choices=["small", "wrn16_4"], default="small")
+    parser.add_argument("--hierarchy", choices=["public", "paper_l5"], default="public")
     parser.add_argument("--train-limit", type=int, default=0)
     parser.add_argument("--test-limit", type=int, default=0)
     parser.add_argument("--seed", type=int, default=7)
@@ -30,7 +31,7 @@ def main() -> None:
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    hierarchy = build_hierarchy()
+    hierarchy = build_hierarchy(args.hierarchy)
     train_set = maybe_subset(Cifar100Pickle(args.data_root, "train", augment=True), args.train_limit, args.seed)
     test_set = maybe_subset(Cifar100Pickle(args.data_root, "test", augment=False), args.test_limit, args.seed)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2, pin_memory=True)
@@ -61,17 +62,30 @@ def main() -> None:
     labels, coarse_labels, leaf_scores = predict(model, test_loader, device)
     coarse_scores = np.zeros((leaf_scores.shape[0], hierarchy.num_coarse), dtype=np.float32)
     probs = softmax_np(leaf_scores)
-    for fine_idx, coarse_idx in enumerate(hierarchy.fine_to_coarse):
-        coarse_scores[:, coarse_idx] += probs[:, fine_idx]
+    level_labels = np.array(hierarchy.fine_to_level_labels, dtype=np.int64)[labels]
+    level_scores = []
+    for level, leaf_sets in enumerate(hierarchy.level_to_leaf_sets):
+        scores = np.zeros((leaf_scores.shape[0], len(leaf_sets)), dtype=np.float32)
+        for node_idx, leaves in enumerate(leaf_sets):
+            scores[:, node_idx] = probs[:, leaves].sum(axis=1)
+        level_scores.append(scores)
+        if level == 0:
+            coarse_scores = scores
+    save_kwargs = {
+        f"level_scores_{idx}": scores for idx, scores in enumerate(level_scores)
+    }
     pred_dir = Path("outputs/predictions")
     pred_dir.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         pred_dir / f"{args.run_name}.npz",
         method_name=args.run_name,
+        hierarchy=args.hierarchy,
         labels=labels,
         coarse_labels=coarse_labels,
         leaf_scores=leaf_scores,
         coarse_scores=coarse_scores,
+        level_labels=level_labels,
+        **save_kwargs,
     )
     Path("checkpoints").mkdir(exist_ok=True)
     torch.save({"model": model.state_dict(), "args": vars(args)}, Path("checkpoints") / f"{args.run_name}.pt")

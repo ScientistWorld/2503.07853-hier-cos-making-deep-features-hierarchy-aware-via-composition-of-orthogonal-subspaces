@@ -6,11 +6,11 @@ Use the CIFAR-100 train/test split obtained by `scripts/download.sh`. Do not add
 
 ## Hierarchy
 
-Use the taxonomy exposed by `data/cifar100_hierarchy.py` for this compact benchmark. Changing the tree changes HOPS, AHD, MS, and FPA and invalidates comparison.
+Use the `paper_l5` taxonomy exposed by `data/cifar100_hierarchy.py` for the primary benchmark. Changing the tree changes HOPS, AHD, MS, and FPA and invalidates comparison unless the result is clearly labeled as a hierarchy ablation.
 
 ## Model Scale
 
-Use a single image classifier with no ensemble. Keep the backbone scale within the same order as the provided small CIFAR CNN unless explicitly comparing to the paper-scale reference in a separate experiment. Improvements should come from hierarchy-aware methodology, not a much larger model.
+Use a single image classifier with no ensemble. Keep the backbone scale within the same order as the provided WRN-16-4 reproduction backbone unless explicitly comparing to the paper-scale reference in a separate experiment. Improvements should come from hierarchy-aware methodology, not a much larger model.
 
 ## Evaluation
 
@@ -21,6 +21,6 @@ Write predictions in the same `.npz` format and evaluate with `scripts/evaluate.
 - [ ] CIFAR-100 data comes from `scripts/download.sh`
 - [ ] No external labeled training data used
 - [ ] Test split not used for training or model selection
-- [ ] Taxonomy in `data/cifar100_hierarchy.py` unchanged
+- [ ] `paper_l5` taxonomy in `data/cifar100_hierarchy.py` unchanged for the primary benchmark
 - [ ] Single model, no ensemble
 - [ ] Scores produced by `scripts/evaluate.sh`

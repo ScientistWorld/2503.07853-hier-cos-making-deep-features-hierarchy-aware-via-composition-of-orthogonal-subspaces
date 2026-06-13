@@ -1,6 +1,6 @@
 # Reproduction Milestones
 
-**Current: core_claim_plus**
+**Current: core_claim**
 
 ## Progress Log
 
@@ -17,5 +17,10 @@
 - Hier-COS again improved the core hierarchy-aware metrics: HOPS 0.6482 vs 0.4445, HOPS@5 0.5314 vs 0.1708, HOPS@20 0.7066 vs 0.5655, and AHD@5 1.0998 vs 1.3855.
 - The workspace is packaged with download, method, baseline, evaluation, and reproduction scripts; `python validate.py --compare` passes.
 
-## Stop Justification
-- Completed at milestone `core_claim_plus`. Further progress toward `majority` would require the exact five-level CIFAR hierarchy used by the paper, multi-seed paper-scale training, and additional datasets such as iNaturalist-19 or tieredImageNet-H.
+## Audit Note
+- The previous agent claimed `core_claim_plus` from public CIFAR hierarchy runs. This continuation reset starts at `core_claim` and submits a direct `paper_l5` run before restoring or advancing that claim.
+
+### [2026-06-13 21:18] - core_claim
+- Continuing audit reset the active milestone to `core_claim`.
+- Verified the implementation is the paper's algorithm and evaluation is independent, then extended the benchmark to the paper's 5-level CIFAR hierarchy.
+- Submitting a WRN-16-4 CE vs Hier-COS run on `paper_l5` before restoring or advancing the milestone.

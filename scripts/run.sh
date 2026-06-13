@@ -29,7 +29,8 @@ python -m baseline.train_ce \
   --batch-size 256 \
   --lr 0.001 \
   --weight-decay 0.0005 \
-  --backbone wrn16_4
+  --backbone wrn16_4 \
+  --hierarchy paper_l5
 
 python -m method.train_hiercos \
   --run-name hier_cos \
@@ -38,7 +39,8 @@ python -m method.train_hiercos \
   --lr 0.001 \
   --weight-decay 0.0005 \
   --backbone wrn16_4 \
-  --alpha 0.05
+  --alpha 0.05 \
+  --hierarchy paper_l5
 
 bash scripts/evaluate.sh outputs/predictions
 python validate.py --compare

@@ -8,8 +8,8 @@ Accuracy and FPA are percentages where higher is better. FPA requires both the f
 
 ## Baselines and Targets
 
-The reference target is the paper's CIFAR-100 result for Cross Entropy and Hier-COS in Table 2, plus the CIFAR-100 FPA value from Table 4. The compact runnable benchmark uses the public CIFAR-100 coarse/fine hierarchy, so absolute hierarchical metric values are not expected to match the paper's 5-level hierarchy exactly.
+The reference target is the paper's CIFAR-100 result for Cross Entropy and Hier-COS in Table 2, plus the CIFAR-100 FPA value from Table 4. The primary runnable benchmark uses the 5-level CIFAR hierarchy table released in the public Hier-COS repository.
 
 ## Evaluation Protocol
 
-Run training scripts to write one `.npz` prediction artifact per method, then run `bash scripts/evaluate.sh outputs/predictions`. The evaluator is method-agnostic and does not import from `method/`. For fair comparison, evaluate on the same CIFAR-100 test split and the same hierarchy file in `data/`.
+Run training scripts to write one `.npz` prediction artifact per method, then run `bash scripts/evaluate.sh outputs/predictions`. The evaluator is method-agnostic and does not import from `method/`. For fair comparison, evaluate on the same CIFAR-100 test split and use the `paper_l5` hierarchy unless explicitly running an ablation.
