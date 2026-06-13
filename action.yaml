@@ -1,8 +1,5 @@
-# IMPORTANT: Once you set action to 'submit' or 'done', STOP immediately.
-# Do NOT sleep, poll, or wait for jobs. The system reads this file
-# only after your turn ends. Sleeping blocks the entire pipeline.
-action: done
+action: submit
 gpus: 1
 test: false
-milestone: core_claim_plus
-notes: "Reproduced Hier-COS core claim on public CIFAR-100 hierarchy with compact CNN and WRN-16-4 backbones. Evaluation is packaged and validate.py --compare passes."
+milestone: core_claim
+notes: "Run CE and Hier-COS with WRN-16-4 on the paper_l5 CIFAR-100 hierarchy; regenerate scores.json and validate the comparison."
