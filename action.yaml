@@ -2,4 +2,4 @@ action: submit
 gpus: 1
 test: false
 milestone: core_claim
-notes: "Reuse the completed CE artifact when available, train Hier-COS for 48 epochs on paper_l5, regenerate scores.json, and validate the comparison."
+notes: "Train the CE baseline for 48 epochs on paper_l5, reuse the 48-epoch Hier-COS artifact when present, regenerate scores.json, and validate the matched comparison."
