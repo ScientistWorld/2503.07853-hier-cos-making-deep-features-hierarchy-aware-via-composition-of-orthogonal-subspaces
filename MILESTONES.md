@@ -20,4 +20,4 @@
 - Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
 
 ## Stop Justification
-- Current completed milestone is `secondary_claims`. The central CIFAR-100 Table 2 result and the Table 4 FPA constraint are reproduced with the paper's architecture family; higher milestones would require multi-seed reporting and the additional iNaturalist-19/tieredImageNet-H experiment families.
+- Completed at milestone `secondary_claims`.
