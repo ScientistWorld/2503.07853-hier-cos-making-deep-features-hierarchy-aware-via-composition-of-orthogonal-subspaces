@@ -29,3 +29,8 @@
 - Completed the first `paper_l5` WRN-16-4 run.
 - Hier-COS improved the hierarchy-aware benefit metrics over CE on the paper hierarchy, including HOPS 0.843 vs 0.593 and AHD@5 1.495 vs 2.050.
 - Accuracy and FPA lagged the CE constraint metrics, and training was still improving at epoch 16; submitting a longer method run to improve the constraint side.
+
+### [2026-06-13 21:36] - core_claim
+- Completed the 48-epoch Hier-COS run on `paper_l5`.
+- Hier-COS now improves both hierarchy-aware metrics and the accuracy/FPA constraints against the existing 12-epoch CE artifact.
+- Submitting a matched 48-epoch CE run before restoring `core_claim_plus`, so the comparison is fair on training duration.

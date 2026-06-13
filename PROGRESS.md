@@ -43,6 +43,8 @@
 - The main gap was experimental fidelity: previous runs used the public CIFAR coarse/fine taxonomy rather than the paper's 5-level hierarchy.
 - Updated data, method, baseline, evaluation, and run scripts to use `paper_l5`.
 - Completed a WRN-16-4 `paper_l5` run. Hier-COS improved hierarchy-aware ranking over CE (HOPS 0.843 vs 0.593; HOPS@20 0.647 vs 0.245; AHD@5 1.495 vs 2.050), but top-1 accuracy and FPA were about 10 points lower. The Hier-COS training curve was still improving at epoch 16, so a longer method run is being submitted.
+- Completed the longer 48-epoch Hier-COS run. Against the existing 12-epoch CE artifact, Hier-COS reached accuracy 64.37 vs 60.89, FPA 63.19 vs 58.58, HOPS 0.893 vs 0.593, HOPS@20 0.754 vs 0.245, and AHD@5 1.272 vs 2.050.
+- A matched 48-epoch CE baseline is being submitted so the final `paper_l5` comparison uses equal training duration.
 
 ## Remaining
 
@@ -55,6 +57,8 @@
 - Full-split job `56c4be57-6dc` failed before training because `baseline.train_ce` did not accept the `--weight-decay` argument used by `scripts/run.sh`. Fixed by adding the optimizer flag to both baseline and Hier-COS trainers.
 - Full-split job `28048a2c-177` completed successfully and produced the first `core_claim` result.
 - WRN-backbone job `2c36aa48-642` completed successfully and produced the final `core_claim_plus` result.
+- Paper-hierarchy job `09d14c43-2ba` completed successfully but used 16 Hier-COS epochs and showed a weak accuracy/FPA constraint.
+- Paper-hierarchy job `973d91a6-4e7` completed successfully with 48 Hier-COS epochs and improved both hierarchy metrics and accuracy/FPA over the existing 12-epoch CE artifact.
 
 ## Deviations from Paper
 
