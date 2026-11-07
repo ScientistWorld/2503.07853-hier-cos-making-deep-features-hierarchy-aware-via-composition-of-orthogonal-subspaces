@@ -1,8 +1,6 @@
 # Once you set action to 'submit' or 'done', STOP immediately.
 # Do NOT sleep, poll, or wait for jobs. The system reads this file
 # only after your turn ends.
-action: submit
-gpus: 2
-test: false
+action: done
 milestone: secondary_claims
-notes: "Hardening round 2: official best-val checkpoint selection (paper pipeline) for Hier-COS and CE; retrain Hier-COS seeds 7/8/9, CE seeds 7/8/9, paper ablation variants, flip-TTA, ensemble diag; freeze CE seed 7 into eval/; score reference; replay all cases (~2.2h on 2 GPUs)"
+notes: "Hardened: test labels removed from data (evaluator-owned labels/taxonomy/frozen CE baseline), strict artifact validation + plausibility ceiling, 45K/5K/10K paper protocol with best-val selection; reference retrained (HOPS 0.935 vs CE 0.549, acc 77.23 vs 77.33, FPA 77.12 vs 76.87); major shortcuts fail/tie, better variants score above seed spread; partial external label leak left to grader (HARDENING.md)"
