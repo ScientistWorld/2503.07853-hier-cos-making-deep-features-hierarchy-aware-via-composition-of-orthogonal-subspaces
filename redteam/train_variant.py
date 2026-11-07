@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 from data.cifar100_dataset import Cifar100Pickle, maybe_subset
 from data.cifar100_hierarchy import build_hierarchy
 from method.hiercos_model import HierCOS, hiercos_loss
-from method.train_hiercos import hierarchy_composed_subspaces, make_optimizer, predict
+from method.train_hiercos import hierarchy_composed_subspaces, make_optimizer, predict, subspace_mask
 
 
 def save_predictions(model, loader, device, hierarchy, directory):
@@ -32,9 +32,43 @@ def save_predictions(model, loader, device, hierarchy, directory):
     )
 
 
+@torch.no_grad()
+def save_view_predictions(model, loader, device, hierarchy, directory, num_views):
+    """Single trained model; average projection energies over fixed image views."""
+    model.eval()
+    subspaces = hierarchy_composed_subspaces(hierarchy.fine_to_path, hierarchy.num_nodes)
+    masks = [subspace_mask(hierarchy.num_nodes, [subspaces[n] for n in nodes]).to(device)
+             for nodes in hierarchy.level_node_indices]
+    all_labels, all_coarse, leaf_scores, coarse_scores = [], [], [], []
+    level_scores = [[] for _ in masks]
+    for images, fine, coarse in loader:
+        images = images.to(device)
+        if num_views == 2:
+            views = [images, images.flip(-1)]
+        else:
+            padded = torch.nn.functional.pad(images, (4, 4, 4, 4), mode="reflect")
+            crops = [padded[:, :, y:y+32, x:x+32]
+                     for y, x in [(0, 0), (0, 8), (8, 0), (8, 8), (4, 4)]]
+            views = crops + [v.flip(-1) for v in crops]
+        energies = sum(model(view)["coords"].square() for view in views) / len(views)
+        leaf_scores.append(torch.sqrt((energies @ model.leaf_mask.T).clamp_min(1e-12)).cpu().numpy())
+        coarse_scores.append(torch.sqrt((energies @ model.coarse_mask.T).clamp_min(1e-12)).cpu().numpy())
+        for i, mask in enumerate(masks):
+            level_scores[i].append(torch.sqrt((energies @ mask.T).clamp_min(1e-12)).cpu().numpy())
+        all_labels.append(fine.numpy())
+        all_coarse.append(coarse.numpy())
+    labels = np.concatenate(all_labels)
+    directory.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(directory / "hier_cos.npz", method_name="hier_cos", hierarchy=hierarchy.name,
+                        labels=labels, coarse_labels=np.concatenate(all_coarse),
+                        leaf_scores=np.concatenate(leaf_scores), coarse_scores=np.concatenate(coarse_scores),
+                        level_labels=np.asarray(hierarchy.fine_to_level_labels)[labels],
+                        **{f"level_scores_{i}": np.concatenate(v) for i, v in enumerate(level_scores)})
+
+
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("mode", choices=["seed", "extended", "bn", "checkpoint"])
+    p.add_argument("mode", choices=["seed", "extended", "bn", "checkpoint", "views2", "views10"])
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--gpu", type=int, default=0)
     args = p.parse_args()
@@ -58,7 +92,8 @@ def main():
                               num_workers=2, pin_memory=True)
     test_loader = DataLoader(test, batch_size=cfg["batch_size"], shuffle=False, num_workers=2)
     case = {"seed": f"reference_seed_{args.seed}", "extended": "variant_more_training",
-            "bn": "variant_bn_recalibration", "checkpoint": "reference_checkpoint"}[args.mode]
+            "bn": "variant_bn_recalibration", "checkpoint": "reference_checkpoint",
+            "views2": "variant_views2", "views10": "variant_views10"}[args.mode]
     outdir = ROOT / "redteam" / case
     outdir.mkdir(parents=True, exist_ok=True)
     (outdir / "config.json").write_text(json.dumps(cfg, indent=2))
@@ -76,7 +111,7 @@ def main():
             for images, _, _ in train_loader:
                 model(images.to(device))
         history = [{"operation": "recompute BN running moments on CIFAR training images only"}]
-    elif args.mode == "checkpoint":
+    elif args.mode in {"checkpoint", "views2", "views10"}:
         history = []
     else:
         epochs = cfg["epochs"] if args.mode == "seed" else 25
@@ -84,7 +119,21 @@ def main():
         opt = make_optimizer(model, cfg["optimizer"], lr, cfg["weight_decay"])
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
         history = []
-        for epoch in range(epochs):
+        resume_file = outdir / "artifacts/resume.pt"
+        start_epoch = 0
+        if resume_file.exists():
+            resume = torch.load(resume_file, map_location=device, weights_only=False)
+            model.load_state_dict(resume["model"])
+            opt.load_state_dict(resume["optimizer"])
+            scheduler.load_state_dict(resume["scheduler"])
+            history = resume["history"]
+            start_epoch = len(history)
+            torch.set_rng_state(resume["cpu_rng"].cpu())
+            torch.cuda.set_rng_state(resume["cuda_rng"].cpu(), device)
+            np.random.set_state(resume["numpy_rng"])
+            random.setstate(resume["random_rng"])
+            del resume
+        for epoch in range(start_epoch, epochs):
             model.train()
             total = correct = 0
             loss_sum = 0.
@@ -117,8 +166,20 @@ def main():
                 torch.cuda.set_rng_state(rng_state[1], device)
                 np.random.set_state(rng_state[2])
                 random.setstate(rng_state[3])
+            if (epoch + 1) % 10 == 0:
+                resume_file.parent.mkdir(parents=True, exist_ok=True)
+                torch.save({"model": model.state_dict(), "optimizer": opt.state_dict(),
+                            "scheduler": scheduler.state_dict(), "history": history,
+                            "cpu_rng": torch.get_rng_state(), "cuda_rng": torch.cuda.get_rng_state(device),
+                            "numpy_rng": np.random.get_state(), "random_rng": random.getstate()},
+                           resume_file.with_suffix(".tmp"))
+                resume_file.with_suffix(".tmp").replace(resume_file)
         cfg["additional_epochs"] = 25 if args.mode == "extended" else 0
-    save_predictions(model, test_loader, device, h, outdir / "artifacts")
+    if args.mode in {"views2", "views10"}:
+        save_view_predictions(model, test_loader, device, h, outdir / "artifacts",
+                              2 if args.mode == "views2" else 10)
+    else:
+        save_predictions(model, test_loader, device, h, outdir / "artifacts")
     torch.save({"model": model.state_dict(), "args": cfg}, outdir / "artifacts/model.pt")
     (outdir / "training_summary.json").write_text(json.dumps({
         "mode": args.mode, "seed": args.seed, "seconds": time.monotonic() - t0,

@@ -21,5 +21,7 @@
   "shortcut_nan",
   "shortcut_infinity",
   "shortcut_empty",
-  "shortcut_method_alias"
+  "shortcut_method_alias",
+  "variant_views2",
+  "variant_views10"
 ]

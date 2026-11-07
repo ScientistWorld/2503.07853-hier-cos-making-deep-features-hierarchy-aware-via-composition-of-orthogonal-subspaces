@@ -77,7 +77,8 @@ def main():
     if case == "reference_artifacts":
         save(original)
     elif case.startswith("reference_seed_") or case in {
-        "variant_more_training", "variant_bn_recalibration", "variant_less_training", "reference_checkpoint"
+        "variant_more_training", "variant_bn_recalibration", "variant_less_training", "reference_checkpoint",
+        "variant_views2", "variant_views10"
     }:
         shutil.copy2(ROOT / "redteam" / case / "artifacts/hier_cos.npz", DEST / "hier_cos.npz")
     elif case == "variant_flat_baseline":
