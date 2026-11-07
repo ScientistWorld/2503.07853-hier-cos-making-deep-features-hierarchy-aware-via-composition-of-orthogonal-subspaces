@@ -1,8 +1,4 @@
-# Once you set action to 'submit' or 'done', STOP immediately.
-# Do NOT sleep, poll, or wait for jobs. The system reads this file
-# only after your turn ends.
-action: pending
-gpus: 0
+action: submit
+gpus: 3
 test: false
-milestone: secondary_claims
-notes: ""
+notes: "Audit: artifact shortcuts, three original 100-epoch seeds, weak 10-epoch model, and 50 additional epochs; restore all scoring inputs after each test."
