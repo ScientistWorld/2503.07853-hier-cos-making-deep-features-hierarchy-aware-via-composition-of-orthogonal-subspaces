@@ -1,0 +1,6 @@
+_original/
+**/artifacts/
+**/predictions/
+**/train.log
+**/__pycache__/
+*.lock
