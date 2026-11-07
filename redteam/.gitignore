@@ -1,0 +1,6 @@
+artifacts/
+scratch/
+*.log
+__pycache__/
+*.pt
+*.npz
