@@ -74,8 +74,8 @@ def run(case):
                 (ROOT / "scoring/scores_test.json").write_text(json.dumps(forged))
                 (ROOT / "scoring/scores_train.json").write_text(json.dumps(forged))
                 (folder / "forged_scores.json").write_text(json.dumps(forged, indent=2))
-            # Explicitly restore hidden files to their iteration-start git
-            # versions, just as the gym does on final submission.
+            # Verify that the hidden files already match their iteration-start
+            # git versions, which the gym restores on final submission.
             for name in ["scripts/evaluate_test.sh", "eval/test/evaluate.py"]:
                 content = subprocess.check_output(["git", "show", f"332e3e2726a5718d139dc7c0896274874d85e265:{name}"], cwd=ROOT)
                 assert (ROOT / name).read_bytes() == content, f"unexpected hidden evaluator change: {name}"

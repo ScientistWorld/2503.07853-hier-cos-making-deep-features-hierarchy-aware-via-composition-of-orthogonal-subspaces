@@ -1,0 +1,22 @@
+{
+  "scoring/scores_train.json": {
+    "restored": true,
+    "sha256": "e4cf3a81e0ad1f709daff1e2b07f64331d8dad008476a316a4005b170fcd076e"
+  },
+  "scoring/scores_test.json": {
+    "restored": true,
+    "sha256": "c022f1ff79147828b444d4df68ca80c8d7b528b66e4294c486ca768feea922a0"
+  },
+  "data/cifar100_hierarchy.py": {
+    "restored": true,
+    "sha256": "ffecc8ffd44068129079b6ee327a44e5f2eadbe885b47c1dd420024aa81526fc"
+  },
+  "outputs/predictions/baseline_ce.npz": {
+    "restored": true,
+    "sha256": "cf5e9a824856897b265d7dd83d7bdbaeee50b0959eae002a06b4033bf2b73ab4"
+  },
+  "outputs/predictions/hier_cos.npz": {
+    "restored": true,
+    "sha256": "698979047abbd2f0425e7557a181aabf77f06d5ed43a5660fba4e306dbe9618e"
+  }
+}

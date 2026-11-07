@@ -1,0 +1,34 @@
+[hive] This stdout log is managed by Hive.
+[hive] job_id: 8beec450
+[hive] host: node
+[hive] node_id: 07c8a4ea259e0610144dad47ed88473b73eaee299b18052e4634117d
+[hive] user: nexus/user (remote)
+[hive] resource: pli-2
+[hive] gpus: 2
+[hive] cpus: 1
+[hive] workdir: /home/user
+[hive] timeout_sec: 3600
+[hive] started_at: 2026-11-07 02:52:39 EST
+[hive] command: apptainer exec --nv --containall --cleanenv --env HF_HOME=/home/user/shared/hf_cache --env TRANSFORMERS_CACHE=/home/user/shared/hf_cache --env HF_DATASETS_CACHE=/home/user/shared/hf_cache/datasets --env TORCH_HOME=/home/user/shared/hf_cache/torch --bind /home/user/scratch/AgentWorkspaces/workspaces/2503.07853:/home/user --overlay /home/user/scratch/AgentWorkspaces/workspaces/2503.07853/environment/overlay.img:ro --bind /home/user/scratch/AgentWorkspaces/shared/datasets:/home/user/shared/datasets:ro --bind /home/user/scratch/AgentWorkspaces/shared/models:/home/user/shared/models:ro --bind /home/user/scratch/AgentWorkspaces/shared/hf_cache:/home/user/shared/hf_cache /home/user/scratch/AgentWorkspaces/workspaces/2503.07853/environment/container.sif bash -c 'cd /home/user && bash /home/user/scripts/run.sh'
+{"case": "reference_artifacts", "method": 0, "train": 0, "test": 0}
+{"case": "variant_flat_baseline", "method": 0, "train": 0, "test": 0}
+{"case": "variant_taxonomy_rerank", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_test_labels", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_constant_self_labels", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_select_correct", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_path_labels", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_omit_leaf_path_level", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_baseline_replacement", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_taxonomy_artifact", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_write_scores", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_constant", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_nan", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_infinity", "method": 0, "train": 0, "test": 0}
+{"case": "shortcut_empty", "method": 0, "train": 1, "test": 1}
+{"case": "shortcut_method_alias", "method": 0, "train": 0, "test": 0}
+{"case": "reference_checkpoint", "method": 0, "train": 0, "test": 0}
+{"case": "variant_bn_recalibration", "method": 0, "train": 0, "test": 0}
+{"case": "variant_more_training", "method": 0, "train": 0, "test": 0}
+{"case": "reference_seed_7", "method": 0, "train": 0, "test": 0}
+{"case": "variant_less_training", "method": 0, "train": 0, "test": 0}
+{"case": "reference_seed_8", "method": 0, "train": 0, "test": 0}

@@ -1,0 +1,16 @@
+[hive] This stdout log is managed by Hive.
+[hive] job_id: ec3f4911
+[hive] host: node
+[hive] node_id: 07c8a4ea259e0610144dad47ed88473b73eaee299b18052e4634117d
+[hive] user: nexus/user (remote)
+[hive] resource: pli-2
+[hive] gpus: 1
+[hive] cpus: 1
+[hive] workdir: /home/user
+[hive] timeout_sec: 3600
+[hive] started_at: 2026-11-07 04:01:15 EST
+[hive] command: apptainer exec --nv --containall --cleanenv --env HF_HOME=/home/user/shared/hf_cache --env TRANSFORMERS_CACHE=/home/user/shared/hf_cache --env HF_DATASETS_CACHE=/home/user/shared/hf_cache/datasets --env TORCH_HOME=/home/user/shared/hf_cache/torch --bind /home/user/scratch/AgentWorkspaces/workspaces/2503.07853:/home/user --overlay /home/user/scratch/AgentWorkspaces/workspaces/2503.07853/environment/overlay.img:ro --bind /home/user/scratch/AgentWorkspaces/shared/datasets:/home/user/shared/datasets:ro --bind /home/user/scratch/AgentWorkspaces/shared/models:/home/user/shared/models:ro --bind /home/user/scratch/AgentWorkspaces/shared/hf_cache:/home/user/shared/hf_cache /home/user/scratch/AgentWorkspaces/workspaces/2503.07853/environment/container.sif bash -c 'cd /home/user && bash /home/user/scripts/run.sh'
+{"case": "shortcut_constant_self_labels", "method": 0, "train": 0, "test": 0}
+{"case": "variant_views2", "method": 0, "train": 0, "test": 0}
+{"case": "variant_views10", "method": 0, "train": 0, "test": 0}
+{"case": "reference_seed_9", "method": 0, "train": 0, "test": 0}
