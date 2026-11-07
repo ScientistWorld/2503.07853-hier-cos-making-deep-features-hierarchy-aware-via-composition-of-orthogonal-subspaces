@@ -1,9 +1,0 @@
-{
-  "name": "shortcut_taxonomy_artifact_keep_arrays",
-  "group": "shortcut",
-  "description": "data/cifar100_hierarchy.py PAPER_L5_ROWS collapsed during scoring; reference arrays unchanged",
-  "special": "taxonomy_rewrite",
-  "files": [
-    "hier_cos.npz"
-  ]
-}

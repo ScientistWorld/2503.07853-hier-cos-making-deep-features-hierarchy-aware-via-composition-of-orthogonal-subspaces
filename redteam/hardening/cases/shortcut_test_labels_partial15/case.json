@@ -1,9 +1,0 @@
-{
-  "name": "shortcut_test_labels_partial15",
-  "group": "shortcut",
-  "description": "Externally obtained labels used on a random 15% of rows, reference elsewhere (stays under the plausibility ceiling)",
-  "special": "",
-  "files": [
-    "hier_cos.npz"
-  ]
-}

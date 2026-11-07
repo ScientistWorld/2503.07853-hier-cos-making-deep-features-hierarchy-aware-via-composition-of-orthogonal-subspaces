@@ -1,9 +1,0 @@
-{
-  "name": "weaker_single_subspace",
-  "group": "weaker",
-  "description": "Paper Fig. 4b ablation: V_i = span{e_i}, no composed subspaces",
-  "special": "",
-  "files": [
-    "hier_cos.npz"
-  ]
-}

@@ -37,6 +37,8 @@ def main() -> None:
     parser.add_argument("--optimizer", choices=["adamw", "sgd"], default="sgd")
     parser.add_argument("--hierarchy", choices=["public", "paper_l5"], default="paper_l5")
     parser.add_argument("--train-limit", type=int, default=0)
+    parser.add_argument("--select", choices=["best_val", "last"], default="best_val",
+                        help="official pipeline: validate every epoch, keep the best validation top-1 checkpoint")
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--device", default="", help="e.g. cuda:1; default: cuda if available")
     parser.add_argument("--run-name", default="cross_entropy")
@@ -60,6 +62,9 @@ def main() -> None:
     model = FlatCE(num_classes=100, backbone=args.backbone).to(device)
     opt = make_optimizer(model, args.optimizer, args.lr, args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(1, args.epochs))
+    Path("checkpoints").mkdir(exist_ok=True)
+    best_path = Path("checkpoints") / f"{args.run_name}_best_state.pt"
+    best_acc, best_epoch = -1.0, 0
     for epoch in range(args.epochs):
         model.train()
         total_loss = 0.0
@@ -77,7 +82,17 @@ def main() -> None:
             total += fine.numel()
             correct += (logits.argmax(dim=1) == fine).sum().item()
         scheduler.step()
-        print(f"epoch={epoch+1} loss={total_loss/total:.4f} train_acc={correct/total:.4f}", flush=True)
+        val_acc = float("nan")
+        if args.select == "best_val":
+            val_acc = val_top1(model, val_loader, device)
+            if val_acc > best_acc:
+                best_acc, best_epoch = val_acc, epoch + 1
+                torch.save(model.state_dict(), best_path)
+        print(f"epoch={epoch+1} loss={total_loss/total:.4f} train_acc={correct/total:.4f} val_acc={val_acc:.4f}", flush=True)
+    if args.select == "best_val" and best_path.exists():
+        model.load_state_dict(torch.load(best_path, map_location="cpu", weights_only=False))
+        best_path.unlink()
+        print(f"selected epoch {best_epoch} (val top-1 {best_acc:.4f})", flush=True)
 
     val_leaf = predict(model, val_loader, device)
     test_leaf = predict(model, test_loader, device)
@@ -88,8 +103,8 @@ def main() -> None:
     )
     val_acc = float((val_leaf.argmax(1) == val_set.fine_labels.numpy()).mean())
     print(f"saved {out_path} val_acc={val_acc:.4f}", flush=True)
-    Path("checkpoints").mkdir(exist_ok=True)
-    torch.save({"model": model.state_dict(), "args": vars(args)}, Path("checkpoints") / f"{args.run_name}.pt")
+    torch.save({"model": model.state_dict(), "args": vars(args), "selected_epoch": best_epoch or args.epochs},
+               Path("checkpoints") / f"{args.run_name}.pt")
 
 
 def level_scores_from_leaves(logits: np.ndarray, hierarchy) -> list[np.ndarray]:
@@ -103,6 +118,17 @@ def level_scores_from_leaves(logits: np.ndarray, hierarchy) -> list[np.ndarray]:
             scores[:, node_idx] = probs[:, leaves].sum(axis=1)
         out.append(scores)
     return out
+
+
+@torch.no_grad()
+def val_top1(model: FlatCE, loader: DataLoader, device: torch.device) -> float:
+    model.eval()
+    correct = total = 0
+    for images, fine, _coarse in loader:
+        correct += int((model(images.to(device)).argmax(dim=1).cpu() == fine).sum())
+        total += int(fine.numel())
+    model.train()
+    return correct / total
 
 
 @torch.no_grad()

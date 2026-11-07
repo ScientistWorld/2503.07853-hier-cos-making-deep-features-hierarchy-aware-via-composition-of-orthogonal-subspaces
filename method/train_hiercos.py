@@ -36,6 +36,8 @@ def main() -> None:
     parser.add_argument("--tta", choices=["none", "flip"], default="none",
                         help="inference views; 'flip' averages projection energies over the image and its mirror")
     parser.add_argument("--load-checkpoint", default="", help="start from this checkpoint (use --epochs 0 to only predict)")
+    parser.add_argument("--select", choices=["best_val", "last"], default="best_val",
+                        help="official pipeline: validate every epoch, keep the best validation top-1 checkpoint")
     parser.add_argument("--train-limit", type=int, default=0)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--device", default="", help="e.g. cuda:1; default: cuda if available")
@@ -75,8 +77,10 @@ def main() -> None:
     ckpt_dir = Path(args.checkpoint_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     resume_path = ckpt_dir / f"{args.run_name}_resume.pt"
+    best_path = ckpt_dir / f"{args.run_name}_best_state.pt"
     history: list[dict] = []
     start_epoch = 0
+    best_acc, best_epoch = -1.0, 0
     if args.epochs > 0 and resume_path.exists():
         resume = torch.load(resume_path, map_location="cpu", weights_only=False)
         model.load_state_dict(resume["model"])
@@ -84,6 +88,7 @@ def main() -> None:
         scheduler.load_state_dict(resume["scheduler"])
         history = resume["history"]
         start_epoch = len(history)
+        best_acc, best_epoch = resume.get("best_acc", -1.0), resume.get("best_epoch", 0)
         torch.set_rng_state(resume["cpu_rng"])
         np.random.set_state(resume["numpy_rng"])
         random.setstate(resume["random_rng"])
@@ -115,18 +120,31 @@ def main() -> None:
             total += fine.numel()
             correct += (out["leaf_scores"].argmax(dim=1) == fine).sum().item()
         scheduler.step()
-        history.append({"epoch": epoch + 1, "loss": total_loss / total, "train_acc": correct / total})
-        print(f"epoch={epoch+1} loss={total_loss/total:.4f} train_acc={correct/total:.4f}", flush=True)
+        row = {"epoch": epoch + 1, "loss": total_loss / total, "train_acc": correct / total}
+        if args.select == "best_val":
+            row["val_acc"] = val_top1(model, val_loader, device)
+            if row["val_acc"] > best_acc:
+                best_acc, best_epoch = row["val_acc"], epoch + 1
+                torch.save(model.state_dict(), best_path.with_suffix(".tmp"))
+                best_path.with_suffix(".tmp").replace(best_path)
+        history.append(row)
+        print(f"epoch={epoch+1} loss={total_loss/total:.4f} train_acc={correct/total:.4f} val_acc={row.get('val_acc', float('nan')):.4f}", flush=True)
         if (epoch + 1) % 10 == 0 and epoch + 1 < args.epochs:
             torch.save({
                 "model": model.state_dict(), "optimizer": opt.state_dict(), "scheduler": scheduler.state_dict(),
                 "history": history, "cpu_rng": torch.get_rng_state(), "numpy_rng": np.random.get_state(),
-                "random_rng": random.getstate(),
+                "random_rng": random.getstate(), "best_acc": best_acc, "best_epoch": best_epoch,
             }, resume_path.with_suffix(".tmp"))
             resume_path.with_suffix(".tmp").replace(resume_path)
 
     if args.epochs > 0:
-        torch.save({"model": model.state_dict(), "args": vars(args), "history": history}, ckpt_dir / f"{args.run_name}.pt")
+        if args.select == "best_val" and best_path.exists():
+            model.load_state_dict(torch.load(best_path, map_location="cpu", weights_only=False))
+            print(f"selected epoch {best_epoch} (val top-1 {best_acc:.4f})", flush=True)
+        torch.save({"model": model.state_dict(), "args": vars(args), "history": history,
+                    "selected_epoch": best_epoch if args.select == "best_val" else args.epochs},
+                   ckpt_dir / f"{args.run_name}.pt")
+        best_path.unlink(missing_ok=True)
         (ckpt_dir / f"{args.run_name}_history.json").write_text(json.dumps(history, indent=2))
         resume_path.unlink(missing_ok=True)
 
@@ -136,6 +154,17 @@ def main() -> None:
     out_path = save_predictions(Path(args.output_dir) / f"{args.run_name}.npz", val_leaf, val_levels, test_leaf, test_levels)
     val_acc = float((val_leaf.argmax(1) == val_set.fine_labels.numpy()).mean())
     print(f"saved {out_path} val_acc={val_acc:.4f}", flush=True)
+
+
+@torch.no_grad()
+def val_top1(model: HierCOS, loader: DataLoader, device: torch.device) -> float:
+    model.eval()
+    correct = total = 0
+    for images, fine, _coarse in loader:
+        pred = model(images.to(device))["leaf_scores"].argmax(dim=1).cpu()
+        correct += int((pred == fine).sum())
+        total += int(fine.numel())
+    return correct / total
 
 
 @torch.no_grad()

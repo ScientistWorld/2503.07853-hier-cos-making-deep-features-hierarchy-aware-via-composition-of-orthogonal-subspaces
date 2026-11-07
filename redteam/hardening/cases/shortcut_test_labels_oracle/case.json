@@ -1,9 +1,0 @@
-{
-  "name": "shortcut_test_labels_oracle",
-  "group": "shortcut",
-  "description": "Perfect taxonomy ranking around externally obtained true labels (test labels are no longer in data/)",
-  "special": "",
-  "files": [
-    "hier_cos.npz"
-  ]
-}

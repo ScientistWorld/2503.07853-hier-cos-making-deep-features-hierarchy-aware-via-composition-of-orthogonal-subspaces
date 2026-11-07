@@ -1,9 +1,0 @@
-{
-  "name": "honest_ce_taxonomy_rerank",
-  "group": "honest_alternative",
-  "description": "CE scores re-ranked by taxonomy distance from CE's own top-1 (no labels used)",
-  "special": "",
-  "files": [
-    "ce_rerank.npz"
-  ]
-}

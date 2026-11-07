@@ -1,5 +1,5 @@
 #!/bin/bash
-# Hardening job: smoke-test the new pipeline, retrain the reference and the CE
+# Hardening job (round 2: official best-validation checkpoint selection): smoke-test the new pipeline, retrain the reference and the CE
 # baseline on the hardened protocol (45K train / 5K val / 10K hidden test),
 # train better/weaker variants, freeze the baseline into the evaluators, score
 # the reference, then run every variant and shortcut through the real
@@ -36,11 +36,19 @@ hiercos() {  # name device extra-args...  -> $RUNS/predictions/name.npz
     || echo "FAILED $name"
 }
 
+cetrain() {  # name seed device  -> $RUNS/predictions/name.npz (extra CE seeds for baseline noise)
+  local name=$1 seed=$2 dev=$3
+  [ -f "$RUNS/predictions/$name.npz" ] && return 0
+  python -m baseline.train_ce --seed "$seed" --run-name "$name" --output-dir "$RUNS/predictions" --device "$dev" > "$LOG/$name.log" 2>&1 \
+    || echo "FAILED $name"
+}
+
 lane_a() {
   if [ ! -f outputs/baseline/cross_entropy.npz ]; then
     python -m baseline.train_ce --seed 7 --run-name cross_entropy --device cuda:0 > "$LOG/cross_entropy_seed7.log" 2>&1 || echo "FAILED cross_entropy"
   fi
   hiercos reference_seed8 cuda:0 --seed 8
+  cetrain baseline_ce_seed9 9 cuda:0
   hiercos weaker_decreasing_weights cuda:0 --seed 7 --level-weights decreasing
   hiercos weaker_uniform_weights cuda:0 --seed 7 --level-weights uniform
   hiercos weaker_epochs5 cuda:0 --seed 7 --epochs 5
@@ -55,6 +63,7 @@ lane_b() {
     fi
   fi
   hiercos better_tta_flip cuda:1 --seed 7 --load-checkpoint checkpoints/hier_cos.pt --epochs 0 --tta flip
+  cetrain baseline_ce_seed8 8 cuda:1
   hiercos reference_seed9 cuda:1 --seed 9
   hiercos weaker_single_subspace cuda:1 --seed 7 --subspace single
 }

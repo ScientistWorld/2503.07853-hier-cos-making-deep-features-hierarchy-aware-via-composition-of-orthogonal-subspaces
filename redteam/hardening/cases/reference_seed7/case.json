@@ -1,9 +1,0 @@
-{
-  "name": "reference_seed7",
-  "group": "reference",
-  "description": "Reference Hier-COS (seed 7) artifact as produced by scripts/reproduce.sh",
-  "special": "",
-  "files": [
-    "hier_cos.npz"
-  ]
-}

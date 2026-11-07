@@ -137,8 +137,13 @@ def main() -> None:
         else:
             print(f"missing variant artifact {src}; skipping {name}")
     write_case("baseline_ce_as_candidate", "baseline",
-               "Flat CE outputs submitted as a candidate (must equal the evaluator-owned cross_entropy row)",
+               "Flat CE outputs (seed 7) submitted as a candidate (must equal the evaluator-owned cross_entropy row)",
                {"flat_ce.npz": ce})
+    for seed in (8, 9):
+        src = RUNS / f"baseline_ce_seed{seed}.npz"
+        if src.exists():
+            write_case(f"baseline_ce_seed{seed}", "baseline", f"Flat CE baseline recipe, seed {seed} (baseline seed noise)",
+                       {"flat_ce.npz": load(src)})
 
     rerank: dict[str, np.ndarray] = {}
     derived: dict[str, np.ndarray] = {}
@@ -239,6 +244,18 @@ def main() -> None:
         "old_bn_recalibration": ROOT / "redteam/variant_bn_recalibration/artifacts/hier_cos.npz",
         "old_less_training": ROOT / "redteam/variant_less_training/artifacts/hier_cos.npz",
     }
+    r1 = OLD / "round1_last_epoch"
+    round1 = {
+        "round1_reference_last_epoch": r1 / "hier_cos.npz",
+        "round1_ce_last_epoch": r1 / "cross_entropy.npz",
+        "round1_seed8_last_epoch": r1 / "runs/predictions/reference_seed8.npz",
+        "round1_seed9_last_epoch": r1 / "runs/predictions/reference_seed9.npz",
+    }
+    for name, path in round1.items():
+        if path.exists():
+            write_case(name, "round1_last_epoch",
+                       f"Hardening round 1 artifact {path.relative_to(ROOT)} (45K split, last-epoch checkpoint)",
+                       {"hier_cos.npz": load(path)})
     for name, path in old.items():
         if path.exists():
             write_case(name, "old_artifact",

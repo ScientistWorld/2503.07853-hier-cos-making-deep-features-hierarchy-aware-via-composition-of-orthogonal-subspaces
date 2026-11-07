@@ -1,9 +1,0 @@
-{
-  "name": "baseline_ce_as_candidate",
-  "group": "baseline",
-  "description": "Flat CE outputs submitted as a candidate (must equal the evaluator-owned cross_entropy row)",
-  "special": "",
-  "files": [
-    "flat_ce.npz"
-  ]
-}

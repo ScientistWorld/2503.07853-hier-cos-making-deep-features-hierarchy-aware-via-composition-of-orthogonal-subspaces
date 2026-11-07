@@ -1,9 +1,0 @@
-{
-  "name": "honest_leaf_derived_levels",
-  "group": "honest_alternative",
-  "description": "Reference leaf scores; multi-level predictions taken as the ancestors of the predicted leaf",
-  "special": "",
-  "files": [
-    "hier_cos.npz"
-  ]
-}

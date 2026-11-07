@@ -1,9 +1,0 @@
-{
-  "name": "shortcut_nan",
-  "group": "shortcut",
-  "description": "Leaf scores NaN",
-  "special": "",
-  "files": [
-    "hier_cos.npz"
-  ]
-}

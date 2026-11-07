@@ -1,9 +1,0 @@
-{
-  "name": "shortcut_infinity",
-  "group": "shortcut",
-  "description": "Leaf scores +inf",
-  "special": "",
-  "files": [
-    "hier_cos.npz"
-  ]
-}
