@@ -1,8 +1,8 @@
 # Once you set action to 'submit' or 'done', STOP immediately.
 # Do NOT sleep, poll, or wait for jobs. The system reads this file
 # only after your turn ends.
-action: pending
-gpus: 0
+action: submit
+gpus: 2
 test: false
 milestone: secondary_claims
-notes: ""
+notes: "Hardening job: smoke test, retrain reference Hier-COS (seeds 7/8/9) and CE baseline on 45K/5K/10K protocol, paper ablation variants + flip-TTA + seed-ensemble diagnostic, freeze baseline into eval/, score reference, replay all variants/shortcuts through the hardened evaluators (~2h on 2 GPUs)"

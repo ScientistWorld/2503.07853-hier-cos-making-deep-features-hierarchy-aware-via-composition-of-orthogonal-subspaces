@@ -1,0 +1,2 @@
+froze ['val_leaf_scores', 'val_level_scores_0', 'val_level_scores_1', 'val_level_scores_2', 'val_level_scores_3'] -> eval/train/fixed/cross_entropy.npz
+froze ['test_leaf_scores', 'test_level_scores_0', 'test_level_scores_1', 'test_level_scores_2', 'test_level_scores_3'] -> eval/test/fixed/cross_entropy.npz

@@ -1,0 +1,2 @@
+epoch=1 loss=4.7063 train_acc=0.0117
+saved redteam/hardening/smoke/baseline/cross_entropy.npz val_acc=0.0100

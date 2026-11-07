@@ -1,0 +1,62 @@
+{
+  "experiments": {
+    "cifar100_hierarchical_classification": {
+      "_meta": {
+        "hierarchy": "paper_l5",
+        "ignored_files": [],
+        "methods": {
+          "cross_entropy": {
+            "file": "/home/user/eval/train/fixed/cross_entropy.npz",
+            "num_examples": 5000,
+            "source": "evaluator-owned frozen baseline",
+            "split": "val",
+            "valid": true
+          },
+          "hier_cos": {
+            "file": "outputs/predictions/hier_cos.npz",
+            "num_examples": 5000,
+            "reason": "fine accuracy 100.00% is at or above the plausibility ceiling 97.0% for CIFAR-100 (consistent with label lookup)",
+            "split": "val",
+            "valid": false
+          }
+        },
+        "num_examples": 5000,
+        "plausibility_ceiling_accuracy": 97.0,
+        "prediction_dir": "outputs/predictions",
+        "split": "val"
+      },
+      "results": {
+        "cross_entropy": {
+          "accuracy": 77.74,
+          "ahd@1": 0.5266,
+          "ahd@20": 3.18505,
+          "ahd@5": 2.23724,
+          "coarse_accuracy": 86.44,
+          "fpa": 77.18,
+          "hops": 0.552727216825691,
+          "hops@20": 0.1736503229394664,
+          "hops@5": 0.04884761904761905,
+          "ms": 2.365678346810422,
+          "path_consistency": 97.18,
+          "top5_accuracy": 93.84
+        },
+        "hier_cos": {
+          "accuracy": 0.0,
+          "ahd@1": 5.0,
+          "ahd@20": 5.0,
+          "ahd@5": 5.0,
+          "coarse_accuracy": 0.0,
+          "fpa": 0.0,
+          "hops": 0.0,
+          "hops@20": 0.0,
+          "hops@5": 0.0,
+          "ms": 5.0,
+          "path_consistency": 0.0,
+          "top5_accuracy": 0.0
+        }
+      }
+    }
+  }
+}
+
+--- stderr ---

@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_path_labels",
+  "group": "shortcut",
+  "description": "Reference scores plus self-reported labels / path labels equal to its own predictions",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

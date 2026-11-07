@@ -1,0 +1,9 @@
+{
+  "name": "weaker_decreasing_weights",
+  "group": "weaker",
+  "description": "Paper Table 8 ablation: w_l > w_l+1 (mass towards coarse levels)",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "weaker_epochs5",
+  "group": "weaker",
+  "description": "Reference recipe trained for 5 epochs (cosine over 5)",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

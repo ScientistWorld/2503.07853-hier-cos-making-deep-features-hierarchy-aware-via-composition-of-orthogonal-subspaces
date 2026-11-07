@@ -1,0 +1,2 @@
+epoch=1 loss=4.8167 train_acc=0.0039
+saved redteam/hardening/smoke/predictions/smoke_hier_cos.npz val_acc=0.0090
