@@ -1,4 +1,4 @@
 action: submit
-gpus: 2
+gpus: 1
 test: false
-notes: "Audit scoring: three full reference seeds, weak/extended/BN variants, and artifact shortcuts; all hidden tests run with no arguments."
+notes: "Finish third full reference seed and deterministic single-model view variants; rerun constant-label shortcut."
