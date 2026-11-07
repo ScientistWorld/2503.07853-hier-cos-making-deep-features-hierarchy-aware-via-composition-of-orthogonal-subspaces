@@ -1,10 +1,10 @@
 #!/bin/bash
-# Run the paper's proposed method.
-#
-# This script trains/runs the paper's method using code in method/.
+# Run the paper's proposed method (Hier-COS) with the paper's CIFAR-100
+# configuration (defaults in method/train_hiercos.py), writing
+# outputs/predictions/<run-name>.npz, then score it on the visible split.
 #
 # Usage:
-#   bash scripts/method.sh
+#   bash scripts/method.sh [--seed 7] [--run-name hier_cos] [...]
 
 set -e
 

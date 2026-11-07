@@ -1,44 +1,39 @@
 {
   "experiments": {
     "cifar100_hierarchical_classification": {
-      "description": "CIFAR-100 hierarchical classification reported in Table 2 and Table 4 using the paper's 5-level CIFAR hierarchy.",
+      "description": "CIFAR-100 hierarchical classification (paper Table 2 and Table 4 CIFAR-100 columns) on the paper's 5-level CIFAR hierarchy, scored on the 10,000 official test images.",
       "weight": 1.0,
       "primary_metric": "hops",
       "metrics": {
         "accuracy": {
           "higher_is_better": true,
-          "coefficient": 0.45,
-          "description": "Fine-label top-1 accuracy, preserving the paper's no-loss-in-recognition constraint."
-        },
-        "macro_accuracy": {
-          "higher_is_better": true,
-          "coefficient": 0.25,
-          "description": "Class-balanced fine-label accuracy that catches improvements concentrated in only a subset of CIFAR-100 classes."
+          "coefficient": 0.5,
+          "description": "Fine-label top-1 accuracy (%), the paper's no-loss-in-recognition constraint."
         },
         "top5_accuracy": {
           "higher_is_better": true,
           "coefficient": 0.2,
-          "description": "Fine-label top-5 accuracy to check that ranked predictions keep the true class near the top."
+          "description": "Fine-label top-5 accuracy (%); the true class should stay near the top of the ranked list."
         },
         "coarse_accuracy": {
           "higher_is_better": true,
           "coefficient": 0.25,
-          "description": "Accuracy at the finest non-leaf hierarchy level, checking whether predictions remain useful at the superclass-like level."
+          "description": "Accuracy (%) of the submitted prediction at the level just above the leaves (20 nodes)."
         },
-        "fine_coarse_consistency": {
+        "path_consistency": {
           "higher_is_better": true,
           "coefficient": 0.2,
-          "description": "Agreement between the predicted fine class's finest non-leaf parent and an explicit submitted hierarchy-level prediction; missing explicit predictions receive zero."
+          "description": "Percentage of examples whose submitted multi-level predictions (all four non-leaf levels) are exactly the ancestors of the submitted top-1 leaf, i.e. a valid tree path."
         },
         "ms": {
           "higher_is_better": false,
           "coefficient": -0.15,
-          "description": "Average hierarchy distance among mistakes, retained as a severity constraint."
+          "description": "Mistake severity: mean LCA distance between true and top-1 class over misclassified examples."
         },
         "ahd@1": {
           "higher_is_better": false,
           "coefficient": -0.15,
-          "description": "Average hierarchy distance of the top prediction over all examples."
+          "description": "Mean LCA distance of the top-1 prediction over all examples."
         },
         "ahd@5": {
           "higher_is_better": false,
@@ -68,7 +63,7 @@
         "fpa": {
           "higher_is_better": true,
           "coefficient": 0.4,
-          "description": "Full-path accuracy measuring simultaneous correctness across hierarchy levels."
+          "description": "Full-path accuracy (%): the top-1 leaf and the submitted prediction at every non-leaf level are all correct."
         }
       },
       "results": {
@@ -96,7 +91,8 @@
           "hops@20": 0.85,
           "fpa": 77.37
         }
-      }
+      },
+      "setup_note": "Paper protocol kept: WRN-28-8, 100 epochs, 45K train / 5K val split of the CIFAR-100 training set, 10K official test set. Paper numbers below are 5-seed means; the gym's reference is a single seed (seed 7). The paper reports CE FPA only in the text (77.11). macro_accuracy was dropped because both splits are exactly class-balanced, where it equals accuracy; fine_coarse_consistency was generalised to path_consistency over all four non-leaf levels (the paper's hierarchical-consistency property)."
     }
   }
 }

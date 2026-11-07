@@ -1,6 +1,16 @@
+"""Flat cross-entropy baseline (paper's "Cross Entropy" row).
+
+Multi-level scores follow the paper: a superclass's probability is the sum of
+its leaves' softmax probabilities. Writes the standard prediction artifact
+(default ``outputs/baseline/cross_entropy.npz``). The benchmark's scored
+cross-entropy row comes from the evaluator-owned frozen copy of this artifact
+(see ``baseline/freeze_fixed_baseline.py``), not from whatever is on disk.
+"""
+
 from __future__ import annotations
 
 import argparse
+import random
 from pathlib import Path
 
 import numpy as np
@@ -8,35 +18,44 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from data.cifar100_dataset import Cifar100Pickle, maybe_subset
+from data.cifar100_dataset import Cifar100TestImages, Cifar100Train, maybe_subset
 from data.cifar100_hierarchy import build_hierarchy
+from data.prediction_format import save_predictions
 from baseline.models import FlatCE
+
+NON_LEAF_LEVELS = 4
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", default="data/downloads/cifar-100-python")
-    parser.add_argument("--epochs", type=int, default=8)
-    parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--lr", type=float, default=3e-3)
-    parser.add_argument("--weight-decay", type=float, default=1e-4)
-    parser.add_argument("--backbone", choices=["small", "wrn16_4", "official_wrn28_8"], default="small")
-    parser.add_argument("--optimizer", choices=["adamw", "sgd"], default="adamw")
-    parser.add_argument("--hierarchy", choices=["public", "paper_l5"], default="public")
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--lr", type=float, default=0.1)
+    parser.add_argument("--weight-decay", type=float, default=5e-4)
+    parser.add_argument("--backbone", choices=["small", "wrn16_4", "official_wrn28_8"], default="official_wrn28_8")
+    parser.add_argument("--optimizer", choices=["adamw", "sgd"], default="sgd")
+    parser.add_argument("--hierarchy", choices=["public", "paper_l5"], default="paper_l5")
     parser.add_argument("--train-limit", type=int, default=0)
-    parser.add_argument("--test-limit", type=int, default=0)
     parser.add_argument("--seed", type=int, default=7)
-    parser.add_argument("--run-name", default="baseline_ce")
+    parser.add_argument("--device", default="", help="e.g. cuda:1; default: cuda if available")
+    parser.add_argument("--run-name", default="cross_entropy")
+    parser.add_argument("--output-dir", default="outputs/baseline")
     args = parser.parse_args()
 
+    random.seed(args.seed)
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
+    if device.type == "cuda":
+        torch.cuda.set_device(device)
     hierarchy = build_hierarchy(args.hierarchy)
-    train_set = maybe_subset(Cifar100Pickle(args.data_root, "train", augment=True), args.train_limit, args.seed)
-    test_set = maybe_subset(Cifar100Pickle(args.data_root, "test", augment=False), args.test_limit, args.seed)
+    train_set = maybe_subset(Cifar100Train(args.data_root, "train", augment=True), args.train_limit, args.seed)
+    val_set = Cifar100Train(args.data_root, "val", augment=False)
+    test_set = Cifar100TestImages(args.data_root)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2, pin_memory=True)
-    test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False, num_workers=2)
+    val_loader = DataLoader(val_set, batch_size=256, shuffle=False, num_workers=2)
+    test_loader = DataLoader(test_set, batch_size=256, shuffle=False, num_workers=2)
 
     model = FlatCE(num_classes=100, backbone=args.backbone).to(device)
     opt = make_optimizer(model, args.optimizer, args.lr, args.weight_decay)
@@ -60,48 +79,36 @@ def main() -> None:
         scheduler.step()
         print(f"epoch={epoch+1} loss={total_loss/total:.4f} train_acc={correct/total:.4f}", flush=True)
 
-    labels, coarse_labels, leaf_scores = predict(model, test_loader, device)
-    coarse_scores = np.zeros((leaf_scores.shape[0], hierarchy.num_coarse), dtype=np.float32)
-    probs = softmax_np(leaf_scores)
-    level_labels = np.array(hierarchy.fine_to_level_labels, dtype=np.int64)[labels]
-    level_scores = []
-    for level, leaf_sets in enumerate(hierarchy.level_to_leaf_sets):
-        scores = np.zeros((leaf_scores.shape[0], len(leaf_sets)), dtype=np.float32)
-        for node_idx, leaves in enumerate(leaf_sets):
-            scores[:, node_idx] = probs[:, leaves].sum(axis=1)
-        level_scores.append(scores)
-        if level == 0:
-            coarse_scores = scores
-    save_kwargs = {
-        f"level_scores_{idx}": scores for idx, scores in enumerate(level_scores)
-    }
-    pred_dir = Path("outputs/predictions")
-    pred_dir.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(
-        pred_dir / f"{args.run_name}.npz",
-        method_name=args.run_name,
-        hierarchy=args.hierarchy,
-        labels=labels,
-        coarse_labels=coarse_labels,
-        leaf_scores=leaf_scores,
-        coarse_scores=coarse_scores,
-        level_labels=level_labels,
-        **save_kwargs,
+    val_leaf = predict(model, val_loader, device)
+    test_leaf = predict(model, test_loader, device)
+    out_path = save_predictions(
+        Path(args.output_dir) / f"{args.run_name}.npz",
+        val_leaf, level_scores_from_leaves(val_leaf, hierarchy),
+        test_leaf, level_scores_from_leaves(test_leaf, hierarchy),
     )
+    val_acc = float((val_leaf.argmax(1) == val_set.fine_labels.numpy()).mean())
+    print(f"saved {out_path} val_acc={val_acc:.4f}", flush=True)
     Path("checkpoints").mkdir(exist_ok=True)
     torch.save({"model": model.state_dict(), "args": vars(args)}, Path("checkpoints") / f"{args.run_name}.pt")
 
 
+def level_scores_from_leaves(logits: np.ndarray, hierarchy) -> list[np.ndarray]:
+    """Superclass probability = sum of its leaves' softmax probabilities."""
+    probs = softmax_np(logits)
+    out = []
+    for level in range(NON_LEAF_LEVELS):
+        leaf_sets = hierarchy.level_to_leaf_sets[level]
+        scores = np.zeros((logits.shape[0], len(leaf_sets)), dtype=np.float32)
+        for node_idx, leaves in enumerate(leaf_sets):
+            scores[:, node_idx] = probs[:, leaves].sum(axis=1)
+        out.append(scores)
+    return out
+
+
 @torch.no_grad()
-def predict(model: FlatCE, loader: DataLoader, device: torch.device):
+def predict(model: FlatCE, loader: DataLoader, device: torch.device) -> np.ndarray:
     model.eval()
-    labels, coarse_labels, leaf_scores = [], [], []
-    for images, fine, coarse in loader:
-        logits = model(images.to(device))
-        labels.append(fine.numpy())
-        coarse_labels.append(coarse.numpy())
-        leaf_scores.append(logits.cpu().numpy())
-    return map(lambda xs: np.concatenate(xs, axis=0), (labels, coarse_labels, leaf_scores))
+    return np.concatenate([model(images.to(device)).cpu().numpy() for images, *_ in loader])
 
 
 def softmax_np(x: np.ndarray) -> np.ndarray:

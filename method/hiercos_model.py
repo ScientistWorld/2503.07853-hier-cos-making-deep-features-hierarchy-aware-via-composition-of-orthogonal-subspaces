@@ -367,8 +367,17 @@ def _subspace_mask(num_nodes: int, subspaces: list[list[int]]) -> torch.Tensor:
     return mask
 
 
-def path_targets(fine_labels: torch.Tensor, fine_to_path: list[list[int]], num_nodes: int) -> torch.Tensor:
-    """Paper's weighted one-hot path distribution P."""
+def path_targets(
+    fine_labels: torch.Tensor,
+    fine_to_path: list[list[int]],
+    num_nodes: int,
+    level_weights: str = "increasing",
+) -> torch.Tensor:
+    """Paper's weighted one-hot path distribution P.
+
+    level_weights="increasing" is the paper's w_l = exp(1 / (h + 1 - l));
+    "decreasing" (reversed) and "uniform" are the Table 8 ablations.
+    """
     out = torch.zeros(fine_labels.numel(), num_nodes, device=fine_labels.device)
     path_table = torch.tensor(fine_to_path, device=fine_labels.device, dtype=torch.long)
     paths = path_table[fine_labels]
@@ -376,6 +385,12 @@ def path_targets(fine_labels: torch.Tensor, fine_to_path: list[list[int]], num_n
     weights = torch.exp(
         1.0 / torch.arange(height, 0, -1, device=fine_labels.device, dtype=torch.float32)
     )
+    if level_weights == "decreasing":
+        weights = weights.flip(0)
+    elif level_weights == "uniform":
+        weights = torch.ones_like(weights)
+    elif level_weights != "increasing":
+        raise ValueError(f"unknown level_weights: {level_weights}")
     # The released Hier-COS code stores P as squared L2-normalized path weights,
     # which sums to one and gives the finest levels the intended larger mass.
     weights = (weights / weights.norm(p=2)).square()
@@ -392,8 +407,9 @@ def hiercos_loss(
     level_node_indices: list[list[int]],
     num_nodes: int,
     alpha: float,
+    level_weights: str = "increasing",
 ) -> torch.Tensor:
-    targets = path_targets(fine_labels, fine_to_path, num_nodes)
+    targets = path_targets(fine_labels, fine_to_path, num_nodes, level_weights)
     log_probs = F.log_softmax(coords.abs(), dim=1)
     kl = F.kl_div(log_probs, targets, reduction="batchmean")
 

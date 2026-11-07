@@ -1,31 +1,28 @@
 #!/bin/bash
-# Reproduce the paper's results end-to-end.
+# Reproduce the paper's CIFAR-100 results end-to-end (inside the container,
+# workspace at /home/user, data fetched beforehand by scripts/download.sh).
 #
-# This script runs inside the compute container and should call
-# scripts/baseline.sh and scripts/method.sh to run baselines and
-# the paper's method, each of which calls scripts/evaluate.sh.
+#   1. flat cross-entropy baseline  -> outputs/baseline/cross_entropy.npz
+#   2. Hier-COS (paper method)      -> outputs/predictions/hier_cos.npz
+#   3. FREEZE_BASELINE=1 only: copy the baseline's raw outputs into the
+#      evaluators (eval/train/fixed, eval/test/fixed) — gym-builder step
+#   4. score on the visible split (scoring/scores.json)
 #
-# Assumes:
-#   - Container is built (environment/container.sif)
-#   - Data and models are downloaded (via scripts/download.sh before running on a compute node)
-#   - Working directory is /home/user
-#
-# This is the "gold standard" reproduction — 
-# You do not need to run this, but keep this in good shape
-# so other agents can easily run a full loop of reproduction and get the paper's numbers.
+# Each training run is WRN-28-8, 100 epochs, ~25 min on one GPU.
 
 set -e
 
 cd /home/user
 
-python - <<'PY'
-from pathlib import Path
-required = Path("data/downloads/cifar-100-python/train")
-if not required.exists():
-    raise SystemExit("CIFAR-100 is missing. Run scripts/download.sh on an internet-enabled node first.")
-PY
-rm -rf outputs/predictions
-mkdir -p outputs/predictions
-bash scripts/baseline.sh --run-name baseline_ce --epochs "${BASELINE_EPOCHS:-100}" --batch-size "${BATCH_SIZE:-64}" --lr "${LR:-0.1}" --weight-decay 0.0005 --optimizer "${OPTIMIZER:-sgd}" --backbone "${BACKBONE:-official_wrn28_8}" --hierarchy "${HIERARCHY:-paper_l5}"
-bash scripts/method.sh --run-name hier_cos --epochs "${METHOD_EPOCHS:-100}" --batch-size "${BATCH_SIZE:-64}" --lr "${LR:-0.1}" --weight-decay 0.0005 --optimizer "${OPTIMIZER:-sgd}" --backbone "${BACKBONE:-official_wrn28_8}" --alpha "${ALPHA:-0.05}" --hierarchy "${HIERARCHY:-paper_l5}"
+if [ ! -e data/downloads/cifar-100-python/train ] || [ ! -e data/downloads/cifar-100-python/test_images.u8 ]; then
+  echo "CIFAR-100 is missing. Run scripts/download.sh on an internet-enabled node first." >&2
+  exit 1
+fi
+SEED="${SEED:-7}"
+mkdir -p outputs/predictions outputs/baseline
+bash scripts/baseline.sh --seed "$SEED" --run-name cross_entropy --epochs "${BASELINE_EPOCHS:-100}"
+python -m method.train_hiercos --seed "$SEED" --run-name hier_cos --epochs "${METHOD_EPOCHS:-100}"
+if [ "${FREEZE_BASELINE:-0}" = "1" ]; then
+  python -m baseline.freeze_fixed_baseline --source outputs/baseline/cross_entropy.npz
+fi
 bash scripts/evaluate.sh outputs/predictions

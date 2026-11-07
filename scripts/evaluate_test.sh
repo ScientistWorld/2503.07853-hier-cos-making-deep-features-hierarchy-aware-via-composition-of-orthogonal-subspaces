@@ -1,9 +1,10 @@
 #!/bin/bash
-# Held-out test-slice evaluator.
+# Hidden test evaluator (10,000 official CIFAR-100 test images).
 #
-# Mirrors scripts/evaluate.sh's contract: the first argument is the directory
-# containing method prediction .npz files. When scoring/scores_train.json exists,
-# the test slice scores the same method keys that appeared on the train slice.
+# Scores every method artifact on disk (outputs/predictions/*.npz, one method
+# per file, keyed by file stem) plus the evaluator-owned frozen cross-entropy
+# baseline, and writes scoring/scores_test.json. Runs with no arguments; an
+# optional first argument overrides the prediction directory.
 
 set -e
 
@@ -13,5 +14,4 @@ mkdir -p scoring
 
 python -m eval.test.evaluate \
   --prediction-dir "${1:-outputs/predictions}" \
-  --output scoring/scores_test.json \
-  --train-scores scoring/scores_train.json
+  --output scoring/scores_test.json

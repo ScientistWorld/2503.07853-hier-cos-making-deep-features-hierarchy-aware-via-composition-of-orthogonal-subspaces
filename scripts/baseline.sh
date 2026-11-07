@@ -1,21 +1,16 @@
 #!/bin/bash
-# Run a baseline method from the paper.
+# Train the paper's flat cross-entropy baseline (WRN-28-8, same recipe and
+# 45K training split as the method). Writes outputs/baseline/cross_entropy.npz.
 #
-# Baselines are simple reference methods the paper compares against. 
-# Implement this only if applicable, i.e. the paper has baselines.
-# You do not need to implement all baselines to begin — 
-# just enough to validate that the evaluation pipeline works 
-# and provide a reference point. You can decide to expand more baselines later.
-# Each baseline must be actually run and scored through evaluate.sh
-# so the numbers are verified, not self-reported.
-# You can decide what this baseline script should do yourself.
+# The scored cross_entropy row in every scores file is recomputed from the
+# evaluator-owned frozen copy of this artifact (eval/*/fixed/), which only
+# scripts/reproduce.sh with FREEZE_BASELINE=1 regenerates.
 #
 # Usage:
-#   bash scripts/baseline.sh <name>
+#   bash scripts/baseline.sh [--seed 7] [...]
 
 set -e
 
 cd /home/user
 
 python -m baseline.train_ce "$@"
-bash scripts/evaluate.sh outputs/predictions
