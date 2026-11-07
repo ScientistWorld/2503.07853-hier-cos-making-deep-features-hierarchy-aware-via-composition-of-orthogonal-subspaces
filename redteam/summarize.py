@@ -44,7 +44,7 @@ def main():
                    seed_stats=seed_stats, runs=runs)
     (AUDIT / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     with (AUDIT / "metrics.csv").open("w", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(["case", "test_exit_code", "num_examples", *metrics])
         for case, run in runs.items():
             if "results" in run:
