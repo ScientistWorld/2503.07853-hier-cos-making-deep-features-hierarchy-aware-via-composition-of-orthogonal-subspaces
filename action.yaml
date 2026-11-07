@@ -1,2 +1,8 @@
-action: done
-notes: "Audit complete: six shortcuts dominate the reference; genuine HOPS gain is below the three-seed spread of 0.004409775. Results and restoration checks are in REDTEAM.md and redteam/."
+# Once you set action to 'submit' or 'done', STOP immediately.
+# Do NOT sleep, poll, or wait for jobs. The system reads this file
+# only after your turn ends.
+action: pending
+gpus: 0
+test: false
+milestone: secondary_claims
+notes: ""
