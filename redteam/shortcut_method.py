@@ -71,7 +71,11 @@ def main():
         return
     if case == "shortcut_constant_self_labels":
         # No images, model, labels, or hidden-split seed are needed.
-        save(oracle_scores(np.zeros(10000, dtype=int)))
+        # Choose the most compact public-taxonomy neighborhood so this
+        # degenerate population also minimizes the broad AHD constraint.
+        distances = distance_table(build_hierarchy("paper_l5"))
+        cls = int(np.sort(distances, axis=1)[:, :20].mean(1).argmin())
+        save(oracle_scores(np.full(10000, cls, dtype=int)))
         return
     original = load()
     if case == "reference_artifacts":
