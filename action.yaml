@@ -5,4 +5,4 @@ action: submit
 gpus: 2
 test: false
 milestone: secondary_claims
-notes: "Hardening job: smoke test, retrain reference Hier-COS (seeds 7/8/9) and CE baseline on 45K/5K/10K protocol, paper ablation variants + flip-TTA + seed-ensemble diagnostic, freeze baseline into eval/, score reference, replay all variants/shortcuts through the hardened evaluators (~2h on 2 GPUs)"
+notes: "Hardening round 2: official best-val checkpoint selection (paper pipeline) for Hier-COS and CE; retrain Hier-COS seeds 7/8/9, CE seeds 7/8/9, paper ablation variants, flip-TTA, ensemble diag; freeze CE seed 7 into eval/; score reference; replay all cases (~2.2h on 2 GPUs)"

@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_method_alias",
+  "group": "shortcut",
+  "description": "CE outputs renamed to hier_cos.npz",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

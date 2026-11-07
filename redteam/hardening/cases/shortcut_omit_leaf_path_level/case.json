@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_omit_leaf_path_level",
+  "group": "shortcut",
+  "description": "Reference leaf scores, only the level-3 path array submitted",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

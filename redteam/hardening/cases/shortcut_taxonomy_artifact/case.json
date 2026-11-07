@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_taxonomy_artifact",
+  "group": "shortcut",
+  "description": "data/cifar100_hierarchy.py PAPER_L5_ROWS collapsed to one path during scoring; width-1 path arrays",
+  "special": "taxonomy_rewrite",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

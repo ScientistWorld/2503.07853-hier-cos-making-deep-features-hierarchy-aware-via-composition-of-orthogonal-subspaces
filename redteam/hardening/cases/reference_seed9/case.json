@@ -1,0 +1,9 @@
+{
+  "name": "reference_seed9",
+  "group": "reference",
+  "description": "Reference recipe, seed 9",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

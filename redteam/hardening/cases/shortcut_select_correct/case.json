@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_select_correct",
+  "group": "shortcut",
+  "description": "Reference rows kept only where the prediction is correct (changes the population)",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

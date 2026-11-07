@@ -1,0 +1,9 @@
+{
+  "name": "old_seed9",
+  "group": "old_artifact",
+  "description": "Pre-hardening artifact redteam/reference_seed_9/artifacts/hier_cos.npz (50K-trained), test rows only",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

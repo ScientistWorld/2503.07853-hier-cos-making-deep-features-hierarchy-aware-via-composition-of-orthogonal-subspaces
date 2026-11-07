@@ -1,0 +1,61 @@
+{
+  "experiments": {
+    "cifar100_hierarchical_classification": {
+      "_meta": {
+        "hierarchy": "paper_l5",
+        "ignored_files": [],
+        "methods": {
+          "cross_entropy": {
+            "file": "/home/user/eval/train/fixed/cross_entropy.npz",
+            "num_examples": 5000,
+            "source": "evaluator-owned frozen baseline",
+            "split": "val",
+            "valid": true
+          },
+          "flat_ce": {
+            "file": "outputs/predictions/flat_ce.npz",
+            "num_examples": 5000,
+            "split": "val",
+            "valid": true
+          }
+        },
+        "num_examples": 5000,
+        "plausibility_ceiling_accuracy": 97.0,
+        "prediction_dir": "outputs/predictions",
+        "split": "val"
+      },
+      "results": {
+        "cross_entropy": {
+          "accuracy": 77.62,
+          "ahd@1": 0.5374,
+          "ahd@20": 3.19085,
+          "ahd@5": 2.26072,
+          "coarse_accuracy": 85.98,
+          "fpa": 76.98,
+          "hops": 0.5503932705160691,
+          "hops@20": 0.1689258567074955,
+          "hops@5": 0.04777142857142857,
+          "ms": 2.4012511170688113,
+          "path_consistency": 97.08,
+          "top5_accuracy": 93.86
+        },
+        "flat_ce": {
+          "accuracy": 78.3,
+          "ahd@1": 0.516,
+          "ahd@20": 3.18757,
+          "ahd@5": 2.23168,
+          "coarse_accuracy": 86.48,
+          "fpa": 77.60000000000001,
+          "hops": 0.5536468862254423,
+          "hops@20": 0.17343769830325795,
+          "hops@5": 0.0535047619047619,
+          "ms": 2.377880184331797,
+          "path_consistency": 97.26,
+          "top5_accuracy": 93.88
+        }
+      }
+    }
+  }
+}
+
+--- stderr ---

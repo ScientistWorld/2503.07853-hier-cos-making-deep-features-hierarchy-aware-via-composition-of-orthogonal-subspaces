@@ -1,0 +1,59 @@
+{
+  "experiments": {
+    "cifar100_hierarchical_classification": {
+      "_meta": {
+        "hierarchy": "paper_l5",
+        "ignored_files": [],
+        "methods": {
+          "cross_entropy": {
+            "file": "/home/user/eval/test/fixed/cross_entropy.npz",
+            "num_examples": 10000,
+            "source": "evaluator-owned frozen baseline",
+            "split": "test",
+            "valid": true
+          },
+          "smoke_hier_cos": {
+            "file": "redteam/hardening/smoke/predictions/smoke_hier_cos.npz",
+            "num_examples": 10000,
+            "split": "test",
+            "valid": true
+          }
+        },
+        "num_examples": 10000,
+        "plausibility_ceiling_accuracy": 97.0,
+        "prediction_dir": "redteam/hardening/smoke/predictions",
+        "split": "test"
+      },
+      "results": {
+        "cross_entropy": {
+          "accuracy": 1.0,
+          "ahd@1": 3.9899,
+          "ahd@20": 3.99035,
+          "ahd@5": 3.95486,
+          "coarse_accuracy": 5.0,
+          "fpa": 1.0,
+          "hops": 0.27060704089869614,
+          "hops@20": 0.00039308755760368623,
+          "hops@5": 0.0,
+          "ms": 4.030202020202021,
+          "path_consistency": 99.83999999999999,
+          "top5_accuracy": 5.82
+        },
+        "smoke_hier_cos": {
+          "accuracy": 0.8999999999999999,
+          "ahd@1": 3.6952,
+          "ahd@20": 3.56934,
+          "ahd@5": 3.65318,
+          "coarse_accuracy": 4.87,
+          "fpa": 0.0,
+          "hops": 0.34142248413561227,
+          "hops@20": 0.014469728197675074,
+          "hops@5": 4.761904761904763e-05,
+          "ms": 3.7287588294651868,
+          "path_consistency": 1.5,
+          "top5_accuracy": 4.34
+        }
+      }
+    }
+  }
+}

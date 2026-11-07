@@ -1,0 +1,9 @@
+{
+  "name": "better_tta_flip",
+  "group": "better",
+  "description": "Seed-7 model, single-model inference averaging projection energies of image and mirror",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

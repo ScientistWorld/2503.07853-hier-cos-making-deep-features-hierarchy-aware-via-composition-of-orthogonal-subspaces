@@ -1,0 +1,9 @@
+{
+  "name": "weaker_uniform_weights",
+  "group": "weaker",
+  "description": "Paper Table 8 ablation: w_l = w_l+1",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

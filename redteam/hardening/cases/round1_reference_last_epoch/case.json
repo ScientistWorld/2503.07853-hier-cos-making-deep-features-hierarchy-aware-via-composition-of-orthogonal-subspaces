@@ -1,0 +1,9 @@
+{
+  "name": "round1_reference_last_epoch",
+  "group": "round1_last_epoch",
+  "description": "Hardening round 1 artifact redteam/hardening/old_artifacts/round1_last_epoch/hier_cos.npz (45K split, last-epoch checkpoint)",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

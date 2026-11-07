@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_constant_self_labels",
+  "group": "shortcut",
+  "description": "Every row the same constant ranking plus invented labels / path labels for that class",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

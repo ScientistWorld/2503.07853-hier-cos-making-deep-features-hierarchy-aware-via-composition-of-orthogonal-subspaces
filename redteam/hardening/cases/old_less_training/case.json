@@ -1,0 +1,9 @@
+{
+  "name": "old_less_training",
+  "group": "old_artifact",
+  "description": "Pre-hardening artifact redteam/variant_less_training/artifacts/hier_cos.npz (50K-trained), test rows only",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

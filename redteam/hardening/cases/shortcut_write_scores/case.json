@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_write_scores",
+  "group": "shortcut",
+  "description": "Prewritten score files plus claimed accuracy/hops/success/runtime/score fields inside the artifact",
+  "special": "prewrite_scores",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "baseline_ce_seed8",
+  "group": "baseline",
+  "description": "Flat CE baseline recipe, seed 8 (baseline seed noise)",
+  "special": "",
+  "files": [
+    "flat_ce.npz"
+  ]
+}

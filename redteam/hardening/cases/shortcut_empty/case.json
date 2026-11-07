@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_empty",
+  "group": "shortcut",
+  "description": "Empty arrays",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

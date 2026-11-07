@@ -1,0 +1,9 @@
+{
+  "name": "shortcut_constant",
+  "group": "shortcut",
+  "description": "Leaf scores all zero",
+  "special": "",
+  "files": [
+    "hier_cos.npz"
+  ]
+}

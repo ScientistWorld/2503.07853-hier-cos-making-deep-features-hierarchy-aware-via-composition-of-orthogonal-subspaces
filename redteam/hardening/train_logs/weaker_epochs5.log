@@ -1,0 +1,7 @@
+epoch=1 loss=3.5453 train_acc=0.0906 val_acc=0.0566
+epoch=2 loss=3.0254 train_acc=0.1748 val_acc=0.1206
+epoch=3 loss=2.6934 train_acc=0.2362 val_acc=0.1388
+epoch=4 loss=2.3707 train_acc=0.3054 val_acc=0.1624
+epoch=5 loss=2.1291 train_acc=0.3628 val_acc=0.2208
+selected epoch 5 (val top-1 0.2208)
+saved redteam/hardening/runs/predictions/weaker_epochs5.npz val_acc=0.2208
