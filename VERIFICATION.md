@@ -1,5 +1,7 @@
 # Verification Report
 
+> **Superseded (iteration 11):** the evaluation design described below (50/50 split of the CIFAR-100 test set, labels read from submitted artifacts, `macro_accuracy` / `fine_coarse_consistency`) was replaced by the hardened design in `HARDENING.md` and `briefing/evaluation.md`: 45K/5K/10K protocol, evaluator-owned labels, taxonomy and baseline, strict artifact validation.
+
 ## Initial Assessment
 
 The workspace started at `secondary_claims` with a completed CIFAR-100 reproduction of "Hier-COS: Making Deep Features Hierarchy-aware via Composition of Orthogonal Subspaces." The claimed milestone is justified: the final run uses the paper's 5-level CIFAR hierarchy, an official-style WRN-28-8 setup, the paper's hierarchy-aware training computation, and method-independent evaluation from saved prediction artifacts.

@@ -4,6 +4,11 @@
 
 ## Progress Log
 
+### [2026-11-07] - secondary_claims (hardening)
+- Hardened the hidden test. Test labels are removed from scientist data; labels, taxonomy and the CE baseline are evaluator-owned; the evaluators check artifact shapes and finiteness and fail implausible runs; the full 10K test set is scored. The paper's 45K/5K split is used with best-validation checkpoint selection.
+- Retrained the reference (Hier-COS seed 7) and the CE baseline from the final code. On the hidden test: HOPS 0.935 vs 0.549, accuracy 77.23 vs 77.33, FPA 77.12 vs 76.87.
+- All major red-team shortcuts now fail or tie. Genuine improvements score above the seed spread and the paper's ablations score below. See HARDENING.md.
+
 ### [2026-06-13 23:21] - secondary_claims
 - Completed final verification for gym readiness.
 - Fixed method/problem separation leakage in the CIFAR hierarchy data utilities and method-agnostic documentation.

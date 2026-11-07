@@ -17,7 +17,8 @@ The paper argues that common hierarchical metrics miss whether top-k predictions
 
 ## Current Reproduction
 
-- Public CIFAR-100 coarse/fine hierarchy, compact CNN full-split run: Hier-COS improved HOPS from 0.432 to 0.624 versus CE, with 58.10% versus 59.80% top-1 accuracy.
-- Public CIFAR-100 coarse/fine hierarchy, shared WRN-16-4 full-split run: Hier-COS improved HOPS from 0.445 to 0.648 and HOPS@5 from 0.171 to 0.531, with 59.98% versus 61.21% top-1 accuracy.
-- Paper 5-level CIFAR hierarchy (`paper_l5`), matched 48-epoch WRN-16-4 run: Hier-COS improved HOPS from 0.582 to 0.894, HOPS@20 from 0.222 to 0.761, AHD@5 from 2.104 to 1.257, and MS from 2.480 to 2.279 versus CE. Top-1 accuracy and FPA remain lower in this reduced single-seed reproduction: 67.65%/65.96% for Hier-COS versus 70.77%/70.29% for CE.
-- Paper 5-level CIFAR hierarchy (`paper_l5`), official-style WRN-28-8 100-epoch run: Hier-COS reproduced the paper-scale CIFAR claim, improving HOPS from 0.556 to 0.940 and HOPS@20 from 0.176 to 0.867 versus CE while slightly improving accuracy/FPA from 78.50/78.04 to 78.85/78.73.
+Benchmark protocol (paper Table 5 and the official pipeline): WRN-28-8, 100 epochs, SGD with cosine decay. Training uses 45K images, with a fixed 5K validation split for best-epoch selection and development scoring. The final scores come from the 10,000 official test images, whose labels are hidden. The taxonomy is the paper's 5-level CIFAR hierarchy.
+
+- Reference (Hier-COS, seed 7) versus the flat cross-entropy baseline (seed 7), on the hidden test: HOPS 0.935 vs 0.549 (paper 0.93 vs 0.54). HOPS@5 is 0.763 vs 0.050 and HOPS@20 0.854 vs 0.163. AHD@5 is 1.097 vs 2.274, AHD@20 2.177 vs 3.195, and MS 2.20 vs 2.39. Accuracy is 77.23% vs 77.33% (paper 77.79 vs 77.77), and full-path accuracy 77.12% vs 76.87% (paper 77.37 vs 77.11).
+- Over three seeds the HOPS gain (0.933 vs 0.551) is roughly 130 times the seed spread (0.003). On mean top-1 accuracy, Hier-COS is 0.7 points lower (76.79 vs 77.51), and its top-5 accuracy is much lower (87.8% vs 93.9%).
+- Visible validation scores track the hidden test: reference HOPS is 0.938 on val and 0.935 on test.

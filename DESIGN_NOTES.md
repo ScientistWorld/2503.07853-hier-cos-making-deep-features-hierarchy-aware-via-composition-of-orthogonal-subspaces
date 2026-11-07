@@ -1,5 +1,7 @@
 # Train/Test Evaluation Design Notes
 
+> **Superseded (iteration 11):** the evaluation design described below (50/50 split of the CIFAR-100 test set, labels read from submitted artifacts, `macro_accuracy` / `fine_coarse_consistency`) was replaced by the hardened design in `HARDENING.md` and `briefing/evaluation.md`: 45K/5K/10K protocol, evaluator-owned labels, taxonomy and baseline, strict artifact validation.
+
 ## Checked
 
 - Confirmed `scripts/evaluate_train.sh` invokes `eval.train.evaluate` and writes `scoring/scores_train.json`.

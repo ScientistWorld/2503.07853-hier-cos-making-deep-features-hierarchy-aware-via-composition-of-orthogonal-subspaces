@@ -92,7 +92,7 @@
           "fpa": 77.37
         }
       },
-      "setup_note": "Paper protocol kept: WRN-28-8, 100 epochs, 45K train / 5K val split of the CIFAR-100 training set, 10K official test set. Paper numbers below are 5-seed means; the gym's reference is a single seed (seed 7). The paper reports CE FPA only in the text (77.11). macro_accuracy was dropped because both splits are exactly class-balanced, where it equals accuracy; fine_coarse_consistency was generalised to path_consistency over all four non-leaf levels (the paper's hierarchical-consistency property)."
+      "setup_note": "Paper protocol kept: WRN-28-8, 100 epochs, 45K train / 5K val split of the CIFAR-100 training set with best-validation-top-1 checkpoint selection (official pipeline), 10K official test set. Paper numbers below are 5-seed means; the gym's reference is a single pre-declared seed (seed 7). The paper reports CE FPA only in the text (77.11). macro_accuracy was dropped because both splits are exactly class-balanced, where it equals accuracy; fine_coarse_consistency was generalised to path_consistency over all four non-leaf levels (the paper's hierarchical-consistency property)."
     }
   }
 }
