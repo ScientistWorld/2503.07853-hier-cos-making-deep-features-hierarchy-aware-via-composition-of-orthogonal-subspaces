@@ -40,7 +40,7 @@
         "hier_cos": {
           "accuracy": 100.0,
           "ahd@1": 0.0,
-          "ahd@20": 2.2,
+          "ahd@20": 1.7,
           "ahd@5": 0.8,
           "coarse_accuracy": 100.0,
           "fine_coarse_consistency": 100.0,
