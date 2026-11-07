@@ -1,0 +1,17 @@
+{
+  "data_root": "data/downloads/cifar-100-python",
+  "epochs": 100,
+  "batch_size": 64,
+  "lr": 0.1,
+  "weight_decay": 0.0005,
+  "alpha": 0.05,
+  "backbone": "official_wrn28_8",
+  "optimizer": "sgd",
+  "hierarchy": "paper_l5",
+  "train_limit": 0,
+  "test_limit": 0,
+  "seed": 7,
+  "run_name": "hier_cos",
+  "stop_after_epoch": 1,
+  "scheduler_T_max": 100
+}

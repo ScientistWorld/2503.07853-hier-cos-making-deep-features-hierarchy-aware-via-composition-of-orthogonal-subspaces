@@ -1,0 +1,13 @@
+{
+  "experiments": {
+    "cifar100_hierarchical_classification": {
+      "results": {
+        "hier_cos": {
+          "hops": 1.0,
+          "accuracy": 100.0,
+          "fpa": 100.0
+        }
+      }
+    }
+  }
+}

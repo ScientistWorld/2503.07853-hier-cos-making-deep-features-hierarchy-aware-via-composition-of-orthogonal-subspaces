@@ -1,0 +1,58 @@
+{
+  "experiments": {
+    "cifar100_hierarchical_classification": {
+      "_meta": {
+        "hierarchy": "paper_l5",
+        "methods": {
+          "cross_entropy": {
+            "file": "outputs/predictions/baseline_ce.npz",
+            "num_examples": 5000,
+            "slice": "train"
+          },
+          "hier_cos": {
+            "file": "outputs/predictions/hier_cos.npz",
+            "num_examples": 5000,
+            "slice": "train"
+          }
+        },
+        "num_nodes": 134,
+        "prediction_dir": "outputs/predictions",
+        "slice": "train",
+        "split_seed": 250307853,
+        "split_strategy": "stratified_by_fine_label_50_50_complement"
+      },
+      "results": {
+        "cross_entropy": {
+          "accuracy": 79.08,
+          "ahd@1": 0.4876,
+          "ahd@20": 3.17581,
+          "ahd@5": 2.23008,
+          "coarse_accuracy": 87.4,
+          "fine_coarse_consistency": 98.92,
+          "fpa": 78.62,
+          "hops": 0.5566251684598554,
+          "hops@20": 0.1782772877666323,
+          "hops@5": 0.05104761904761906,
+          "macro_accuracy": 79.07999999999998,
+          "ms": 2.3307839388145317,
+          "top5_accuracy": 94.6
+        },
+        "hier_cos": {
+          "accuracy": 1.0,
+          "ahd@1": 3.99,
+          "ahd@20": 3.8525,
+          "ahd@5": 3.69,
+          "coarse_accuracy": 88.5,
+          "fine_coarse_consistency": 5.1,
+          "fpa": 78.94,
+          "hops": 0.3055840817416804,
+          "hops@20": 0.0013150098749177097,
+          "hops@5": 0.0,
+          "macro_accuracy": 1.0,
+          "ms": 4.03030303030303,
+          "top5_accuracy": 5.0
+        }
+      }
+    }
+  }
+}

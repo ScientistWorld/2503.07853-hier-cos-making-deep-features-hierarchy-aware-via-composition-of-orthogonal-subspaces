@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/user/eval/test/evaluate.py", line 334, in <module>
+    main()
+  File "/home/user/eval/test/evaluate.py", line 329, in main
+    scores = evaluate_all(Path(args.prediction_dir), Path(args.output), Path(args.train_scores))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/eval/test/evaluate.py", line 292, in evaluate_all
+    method_key, metrics, meta = evaluate_prediction_file(npz)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/eval/test/evaluate.py", line 20, in evaluate_prediction_file
+    indices = stratified_split_indices(labels, SLICE_NAME)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/eval/test/evaluate.py", line 57, in stratified_split_indices
+    return np.sort(np.concatenate(selected)).astype(int)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: need at least one array to concatenate

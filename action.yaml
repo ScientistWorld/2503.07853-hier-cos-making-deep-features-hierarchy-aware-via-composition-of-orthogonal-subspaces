@@ -1,4 +1,4 @@
 action: submit
-gpus: 3
+gpus: 2
 test: false
-notes: "Audit: artifact shortcuts, three original 100-epoch seeds, weak 10-epoch model, and 50 additional epochs; restore all scoring inputs after each test."
+notes: "Audit scoring: three full reference seeds, weak/extended/BN variants, and artifact shortcuts; all hidden tests run with no arguments."
