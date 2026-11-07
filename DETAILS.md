@@ -20,6 +20,7 @@ The paper argues that common hierarchical metrics miss whether top-k predictions
 - Public CIFAR-100 coarse/fine hierarchy, compact CNN full-split run: Hier-COS improved HOPS from 0.432 to 0.624 versus CE, with 58.10% versus 59.80% top-1 accuracy.
 - Public CIFAR-100 coarse/fine hierarchy, shared WRN-16-4 full-split run: Hier-COS improved HOPS from 0.445 to 0.648 and HOPS@5 from 0.171 to 0.531, with 59.98% versus 61.21% top-1 accuracy.
 - Paper 5-level CIFAR hierarchy (`paper_l5`), matched 48-epoch WRN-16-4 run: Hier-COS improved HOPS from 0.582 to 0.894, HOPS@20 from 0.222 to 0.761, AHD@5 from 2.104 to 1.257, and MS from 2.480 to 2.279 versus CE. Top-1 accuracy and FPA remain lower in this reduced single-seed reproduction: 67.65%/65.96% for Hier-COS versus 70.77%/70.29% for CE.
+- Paper 5-level CIFAR hierarchy (`paper_l5`), official-style WRN-28-8 100-epoch run: Hier-COS reproduced the paper-scale CIFAR claim, improving HOPS from 0.556 to 0.940 and HOPS@20 from 0.176 to 0.867 versus CE while slightly improving accuracy/FPA from 78.50/78.04 to 78.85/78.73.
 
 ---
 
@@ -67,7 +68,7 @@ Accuracy and FPA are percentages where higher is better. FPA requires both the f
 
 ## Baselines and Targets
 
-The reference target is the paper's CIFAR-100 result for Cross Entropy and Hier-COS in Table 2, plus the CIFAR-100 FPA value from Table 4. The primary runnable benchmark uses the 5-level CIFAR hierarchy table released in the public Hier-COS repository.
+The reference targets are the paper's CIFAR-100 numbers for the flat cross-entropy baseline and the best reported hierarchy-aware system in Table 2, plus the CIFAR-100 FPA values from Table 4. The primary runnable benchmark uses the released 5-level CIFAR hierarchy table associated with the paper.
 
 ## Evaluation Protocol
 
@@ -134,12 +135,227 @@ Run training scripts to write one `.npz` prediction artifact per method, then ru
 
 </details>
 
+### Iteration 3: gpt-5.5
+- **Milestone**: `secondary_claims` | **Status**: done
+- **Working time**: 26m | **GPU**: 0.8h
+- **Jobs**: 10 total (9 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 22:54] - secondary_claims
+- Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
+- Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.
+- Reproduced the key constraint side: Hier-COS kept comparable or better accuracy/FPA, reaching 78.85% accuracy and 78.73 FPA versus CE at 78.50% and 78.04.
+
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
+### [2026-06-13 21:52] - core_claim_plus
+- Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
+- Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.
+- Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
+
+</details>
+
+### Iteration 4: gpt-5.5 (designer_stage_1)
+- **Milestone**: `secondary_claims` | **Status**: done
+- **Working time**: 4m | **GPU**: 0.0h
+- **Jobs**: 10 total (9 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 22:54] - secondary_claims
+- Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
+- Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.
+- Reproduced the key constraint side: Hier-COS kept comparable or better accuracy/FPA, reaching 78.85% accuracy and 78.73 FPA versus CE at 78.50% and 78.04.
+
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
+### [2026-06-13 21:52] - core_claim_plus
+- Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
+- Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.
+- Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
+
+</details>
+
+### Iteration 5: gpt-5.5 (designer_stage_2)
+- **Milestone**: `secondary_claims` | **Status**: done
+- **Working time**: 4m | **GPU**: 0.0h
+- **Jobs**: 10 total (9 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 22:54] - secondary_claims
+- Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
+- Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.
+- Reproduced the key constraint side: Hier-COS kept comparable or better accuracy/FPA, reaching 78.85% accuracy and 78.73 FPA versus CE at 78.50% and 78.04.
+
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
+### [2026-06-13 21:52] - core_claim_plus
+- Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
+- Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.
+- Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
+
+</details>
+
+### Iteration 6: gpt-5.5 (designer_stage_3)
+- **Milestone**: `secondary_claims` | **Status**: done
+- **Working time**: 5m | **GPU**: 0.0h
+- **Jobs**: 12 total (11 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 22:54] - secondary_claims
+- Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
+- Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.
+- Reproduced the key constraint side: Hier-COS kept comparable or better accuracy/FPA, reaching 78.85% accuracy and 78.73 FPA versus CE at 78.50% and 78.04.
+
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
+### [2026-06-13 21:52] - core_claim_plus
+- Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
+- Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.
+- Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
+
+</details>
+
+### Iteration 7: gpt-5.5 (packager)
+- **Milestone**: `secondary_claims` | **Status**: done
+- **Working time**: 2m | **GPU**: 0.0h
+- **Jobs**: 12 total (11 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 22:54] - secondary_claims
+- Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
+- Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.
+- Reproduced the key constraint side: Hier-COS kept comparable or better accuracy/FPA, reaching 78.85% accuracy and 78.73 FPA versus CE at 78.50% and 78.04.
+
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
+### [2026-06-13 21:52] - core_claim_plus
+- Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
+- Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.
+- Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
+
+</details>
+
+### Iteration 8: gpt-5.5 (verifier)
+- **Milestone**: `secondary_claims` | **Status**: done
+- **Working time**: 7m | **GPU**: 0.0h
+- **Jobs**: 12 total (11 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 23:21] - secondary_claims
+- Completed final verification for gym readiness.
+- Fixed method/problem separation leakage in the CIFAR hierarchy data utilities and method-agnostic documentation.
+- Aligned top-level `scores.json` and `eval/metrics.py` with every nonzero metric coefficient in `reference.json`.
+
+### [2026-06-13 22:54] - secondary_claims
+- Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
+- Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.
+- Reproduced the key constraint side: Hier-COS kept comparable or better accuracy/FPA, reaching 78.85% accuracy and 78.73 FPA versus CE at 78.50% and 78.04.
+
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
+### [2026-06-13 21:52] - core_claim_plus
+- Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
+- Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.
+- Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
+
+</details>
+
+### Iteration 9: gpt-5.5 (verifier)
+- **Milestone**: `secondary_claims` | **Status**: done
+- **Working time**: 7m | **GPU**: 0.0h
+- **Jobs**: 12 total (11 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 23:21] - secondary_claims
+- Completed final verification for gym readiness.
+- Fixed method/problem separation leakage in the CIFAR hierarchy data utilities and method-agnostic documentation.
+- Aligned top-level `scores.json` and `eval/metrics.py` with every nonzero metric coefficient in `reference.json`.
+
+### [2026-06-13 22:54] - secondary_claims
+- Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
+- Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.
+- Reproduced the key constraint side: Hier-COS kept comparable or better accuracy/FPA, reaching 78.85% accuracy and 78.73 FPA versus CE at 78.50% and 78.04.
+
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
+### [2026-06-13 21:52] - core_claim_plus
+- Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
+- Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.
+- Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
+
+</details>
+
+### Iteration 10: gpt-6.1-sol (redteam)
+- **Milestone**: `secondary_claims` | **Status**: done
+- **Working time**: 13m | **GPU**: 2.5h
+- **Jobs**: 12 total (11 completed, 1 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-13 23:21] - secondary_claims
+- Completed final verification for gym readiness.
+- Fixed method/problem separation leakage in the CIFAR hierarchy data utilities and method-agnostic documentation.
+- Aligned top-level `scores.json` and `eval/metrics.py` with every nonzero metric coefficient in `reference.json`.
+
+### [2026-06-13 22:54] - secondary_claims
+- Completed the official-style single-seed CIFAR-100 WRN-28-8 run on the paper's 5-level hierarchy.
+- Reproduced the paper's primary hierarchy-aware ranking effect: HOPS 0.940 for Hier-COS versus 0.556 for CE, close to the reported 0.930 versus 0.540.
+- Reproduced the key constraint side: Hier-COS kept comparable or better accuracy/FPA, reaching 78.85% accuracy and 78.73 FPA versus CE at 78.50% and 78.04.
+
+### [2026-06-13 22:03] - core_claim_plus
+- Audited the continued workspace and restored confidence in the previous `core_claim_plus` milestone.
+- Verified the implementation contains the paper's actual Hier-COS computation and that evaluation reads method outputs independently.
+- Cleaned tracked generated artifacts and decoupled the CE baseline from the method module before submitting the higher-fidelity WRN-28-8 follow-up.
+
+### [2026-06-13 21:52] - core_claim_plus
+- Completed matched WRN-16-4 runs on the paper's 5-level CIFAR hierarchy.
+- Hier-COS reproduced the central hierarchy-aware ranking effect over CE while tracking accuracy and full-path accuracy constraints.
+- Added an official-style WRN-28-8/SGD CIFAR configuration and queued a paper-scale single-seed follow-up.
+
+</details>
+
 
 ---
 
 # Reproduction Milestones
 
-**Current: core_claim**
+**Current: secondary_claims**
 
 ## Stop Justification
-- Completed at milestone `core_claim`.
+- Completed at milestone `secondary_claims`.
